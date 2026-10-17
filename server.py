@@ -11,7 +11,7 @@ Algorithms Assigned:
 - Hashing Algorithm: Whirlpool (from scratch)
 
 Server Workflow:
-1. Generates or accepts Server RSA keypair (Public and Private key parameters).
+1. Generates or prompts for Server RSA keypair (Public and Private key parameters).
 2. Listens for client connection on specified port.
 3. Responds to client's request for Server Public Key.
 4. Receives message bundle:
@@ -27,12 +27,19 @@ Server Workflow:
 """
 
 import socket
-import json
 import argparse
 import sys
-from rsa import generate_rsa_keys, generate_keypair_from_primes, decrypt_rsa, verify_digest_signature
-from sdes import decrypt_message, format_decryption_trace
-from whirlpool import whirlpool_hash
+
+from algorithms import (
+    generate_rsa_keys,
+    generate_keypair_from_primes,
+    decrypt_rsa,
+    verify_digest_signature,
+    decrypt_message,
+    format_decryption_trace,
+    whirlpool_hash
+)
+from network import MessageProtocol, send_json, recv_json
 
 
 def get_interactive_server_inputs():
@@ -104,39 +111,26 @@ def run_server(host="127.0.0.1", port=12345, auto_keys=True, custom_p=None, cust
         with conn:
             # 3. Message Flow Handling
             # Step 1: Wait for client's public key request
-            raw_req = conn.recv(4096).decode("utf-8")
-            if not raw_req:
+            req_json = recv_json(conn)
+            if not req_json:
                 print("[-] No request received from client.")
                 return
 
-            req_json = json.loads(raw_req)
-            if req_json.get("type") == "REQUEST_SERVER_PUBLIC_KEY":
+            if req_json.get("type") == MessageProtocol.REQ_PUBLIC_KEY:
                 print("[*] Received request for Server Public Key from Client.")
-                # Send Server Public Key
-                resp = json.dumps({
-                    "type": "SERVER_PUBLIC_KEY",
-                    "e": server_e,
-                    "n": server_n
-                })
-                conn.sendall(resp.encode("utf-8"))
+                # Send Server Public Key using protocol module
+                resp = MessageProtocol.response_server_key(server_e, server_n)
+                send_json(conn, resp)
                 print("[*] Sent Server Public Key to Client.")
             else:
-                print(f"[-] Unexpected message: {raw_req}")
+                print(f"[-] Unexpected message: {req_json}")
                 return
 
             # Step 2: Receive Payload from Client
-            payload_data = ""
-            while True:
-                chunk = conn.recv(8192).decode("utf-8")
-                if not chunk:
-                    break
-                payload_data += chunk
-                # Check for end of JSON payload
-                try:
-                    payload = json.loads(payload_data)
-                    break
-                except json.JSONDecodeError:
-                    continue
+            payload = recv_json(conn)
+            if not payload:
+                print("[-] No payload received.")
+                return
 
             print("[+] Received secure bundle from Client.")
 
@@ -147,7 +141,6 @@ def run_server(host="127.0.0.1", port=12345, auto_keys=True, custom_p=None, cust
 
             # Step 3: Decrypt Secret Key using Server's RSA Private Key
             decrypted_key_int = decrypt_rsa(enc_secret_key, priv_key)
-            # S-DES secret key is a 10-bit binary string
             secret_key_bin = bin(decrypted_key_int)[2:].zfill(10)
 
             # Step 4: Decrypt Ciphertext using S-DES
@@ -155,7 +148,6 @@ def run_server(host="127.0.0.1", port=12345, auto_keys=True, custom_p=None, cust
 
             # Step 5: Compute Whirlpool Hash of Decrypted Message
             computed_hash_hex = whirlpool_hash(decrypted_message)
-            computed_hash_int = int(computed_hash_hex, 16)
 
             # Step 6: Verify Client Digital Signature using Client's RSA Public Key
             is_valid, verification_code, expected_code = verify_digest_signature(
@@ -183,14 +175,9 @@ def run_server(host="127.0.0.1", port=12345, auto_keys=True, custom_p=None, cust
             print(f"Message: <{msg_status}>")
             print("=" * 70)
 
-            # Step 7: Send confirmation to Client
-            ack_msg = json.dumps({
-                "type": "ACK",
-                "status": msg_status,
-                "signature": sig_status,
-                "received_message": decrypted_message
-            })
-            conn.sendall(ack_msg.encode("utf-8"))
+            # Step 7: Send confirmation ACK to Client
+            ack_msg = MessageProtocol.ack(msg_status, sig_status, decrypted_message)
+            send_json(conn, ack_msg)
 
     finally:
         server_sock.close()

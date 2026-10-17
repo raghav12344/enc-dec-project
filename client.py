@@ -14,7 +14,7 @@ Client Workflow:
 1. Accepts/prompts for:
    - Message
    - Secret Key (10-bit binary string)
-   - Client RSA Key Parameters (generates or uses specified primes)
+   - Client RSA Key Parameters (generates or prompts for primes)
 2. Connects to Server and requests Server's RSA Public Key.
 3. Encrypts Secret Key using Server's RSA Public Key.
 4. Encrypts Message using S-DES and records intermediate encryption process.
@@ -30,12 +30,19 @@ Client Workflow:
 """
 
 import socket
-import json
 import argparse
 import sys
-from rsa import generate_rsa_keys, generate_keypair_from_primes, encrypt_rsa, sign_digest
-from sdes import encrypt_message, format_encryption_trace
-from whirlpool import whirlpool_hash
+
+from algorithms import (
+    generate_rsa_keys,
+    generate_keypair_from_primes,
+    encrypt_rsa,
+    sign_digest,
+    encrypt_message,
+    format_encryption_trace,
+    whirlpool_hash
+)
+from network import MessageProtocol, send_json, recv_json
 
 
 def get_interactive_inputs():
@@ -67,6 +74,8 @@ def get_interactive_inputs():
         else:
             print("    [!] Error: Secret Key must be exactly 10 binary digits (0 or 1).")
             print(f"        Example: {default_key}. Please try again:")
+
+    print(f"    -> Selected Secret Key: {secret_key} (integer: {int(secret_key, 2)})")
 
     # 3. Public and Private Key Parameters (RSA)
     print(f"\n[3] Enter Client Key Generation Parameters (RSA):")
@@ -148,13 +157,12 @@ def run_client(
         print("[+] Connected to Server successfully.")
 
         # Step 1: Request Server Public Key
-        req = json.dumps({"type": "REQUEST_SERVER_PUBLIC_KEY"})
-        sock.sendall(req.encode("utf-8"))
+        req = MessageProtocol.request_server_key()
+        send_json(sock, req)
         print("[*] Sent request for Server Public Key.")
 
         # Step 2: Receive Server Public Key
-        resp_raw = sock.recv(4096).decode("utf-8")
-        resp_json = json.loads(resp_raw)
+        resp_json = recv_json(sock)
         server_pub_key = (int(resp_json["e"]), int(resp_json["n"]))
         print(f"[+] Received Server Public Key: (e={server_pub_key[0]}, n={server_pub_key[1]})")
 
@@ -190,23 +198,17 @@ def run_client(
         print("=" * 70)
 
         # 6. Send payload to Server
-        # Payload bundle: Ciphertext + Encrypted secret key + Client Signature + Client Public Key
-        payload = json.dumps({
-            "type": "PAYLOAD",
-            "ciphertext": ciphertext_hex,
-            "encrypted_secret_key": str(encrypted_secret_key),
-            "client_signature": str(digital_signature),
-            "client_public_key": {
-                "e": str(client_e),
-                "n": str(client_n)
-            }
-        })
-        sock.sendall(payload.encode("utf-8"))
+        payload = MessageProtocol.payload(
+            ciphertext_hex,
+            encrypted_secret_key,
+            digital_signature,
+            (client_e, client_n)
+        )
+        send_json(sock, payload)
         print("\n[+] Sent payload bundle to Server.")
 
         # 7. Await Server Acknowledgment
-        ack_raw = sock.recv(4096).decode("utf-8")
-        ack_json = json.loads(ack_raw)
+        ack_json = recv_json(sock)
         print(f"[+] Server Response received:")
         print(f"    Status:    {ack_json.get('status')}")
         print(f"    Signature: {ack_json.get('signature')}")

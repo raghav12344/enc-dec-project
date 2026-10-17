@@ -80,6 +80,12 @@ def package_zip():
     """Packages all required submission files into the designated ZIP."""
     zip_name = "20243226_Raghav_Gupta.zip"
     files_to_zip = [
+        "algorithms/__init__.py",
+        "algorithms/sdes.py",
+        "algorithms/rsa.py",
+        "algorithms/whirlpool.py",
+        "network/__init__.py",
+        "network/protocol.py",
         "whirlpool.py",
         "sdes.py",
         "rsa.py",

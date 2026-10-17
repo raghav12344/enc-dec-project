@@ -16,9 +16,19 @@ import threading
 import time
 import unittest
 
-from sdes import encrypt_message, decrypt_message, generate_subkeys, encrypt_block_with_trace, decrypt_block_with_trace
-from whirlpool import whirlpool_hash
-from rsa import generate_rsa_keys, encrypt_rsa, decrypt_rsa, sign_digest, verify_digest_signature
+from algorithms import (
+    encrypt_message,
+    decrypt_message,
+    generate_subkeys,
+    encrypt_block_with_trace,
+    decrypt_block_with_trace,
+    whirlpool_hash,
+    generate_rsa_keys,
+    encrypt_rsa,
+    decrypt_rsa,
+    sign_digest,
+    verify_digest_signature
+)
 from server import run_server
 from client import run_client
 
