@@ -52,7 +52,7 @@ def run_inline_server():
     from server import run_server
     print("\n[+] Starting Server in current terminal (Press Ctrl+C to stop)...")
     try:
-        run_server(host="127.0.0.1", port=12345)
+        run_server(host="127.0.0.1", port=12345, interactive=True)
     except KeyboardInterrupt:
         print("\n[*] Server stopped by user.")
 

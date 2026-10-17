@@ -68,9 +68,24 @@ def get_interactive_inputs():
             print("    [!] Error: Secret Key must be exactly 10 binary digits (0 or 1).")
             print(f"        Example: {default_key}. Please try again:")
 
-    print(f"    -> Selected Secret Key: {secret_key} (integer: {int(secret_key, 2)})")
+    # 3. Public and Private Key Parameters (RSA)
+    print(f"\n[3] Enter Client Key Generation Parameters (RSA):")
+    print(f"    (Press ENTER to auto-generate secure 280-bit primes where modulus n > 512 bits)")
+    p_in = input("    Enter Prime p (or press ENTER for default): ").strip()
+    q_in = input("    Enter Prime q (or press ENTER for default): ").strip()
+    e_in = input("    Enter Public Exponent e (or press ENTER for 65537): ").strip()
+
+    custom_p = int(p_in) if p_in.isdigit() else None
+    custom_q = int(q_in) if q_in.isdigit() else None
+    custom_e = int(e_in) if e_in.isdigit() else 65537
+
+    if custom_p and custom_q:
+        print(f"    -> Using custom key parameters: p={custom_p}, q={custom_q}, e={custom_e}")
+    else:
+        print(f"    -> Using auto-generated key parameters (modulus > 512 bits to accommodate Whirlpool)")
+
     print("=" * 60)
-    return message, secret_key
+    return message, secret_key, custom_p, custom_q, custom_e
 
 
 def run_client(
@@ -94,7 +109,7 @@ def run_client(
 
     # 1. Gather Inputs
     if interactive:
-        message, secret_key = get_interactive_inputs()
+        message, secret_key, custom_p, custom_q, custom_e = get_interactive_inputs()
     else:
         if not message:
             message = "CONFIDENTIAL CRYPTO MESSAGE 2026"

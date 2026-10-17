@@ -35,7 +35,31 @@ from sdes import decrypt_message, format_decryption_trace
 from whirlpool import whirlpool_hash
 
 
-def run_server(host="127.0.0.1", port=12345, auto_keys=True, custom_p=None, custom_q=None, custom_e=65537):
+def get_interactive_server_inputs():
+    """Prompts the user for Server RSA key parameters interactively."""
+    print("\n" + "=" * 60)
+    print("  INTERACTIVE SERVER KEY CONFIGURATION")
+    print("=" * 60)
+    print("\nEnter Server Key Generation Parameters (RSA):")
+    print("  (Press ENTER to auto-generate secure 280-bit primes where modulus n > 512 bits)")
+    p_in = input("  Enter Prime p (or press ENTER for default): ").strip()
+    q_in = input("  Enter Prime q (or press ENTER for default): ").strip()
+    e_in = input("  Enter Public Exponent e (or press ENTER for 65537): ").strip()
+
+    custom_p = int(p_in) if p_in.isdigit() else None
+    custom_q = int(q_in) if q_in.isdigit() else None
+    custom_e = int(e_in) if e_in.isdigit() else 65537
+
+    if custom_p and custom_q:
+        print(f"  -> Using custom key parameters: p={custom_p}, q={custom_q}, e={custom_e}")
+    else:
+        print(f"  -> Using auto-generated key parameters (modulus > 512 bits to accommodate Whirlpool)")
+
+    print("=" * 60)
+    return custom_p, custom_q, custom_e
+
+
+def run_server(host="127.0.0.1", port=12345, auto_keys=True, custom_p=None, custom_q=None, custom_e=65537, interactive=False):
     """
     Runs the secure message exchange server.
     """
@@ -46,6 +70,9 @@ def run_server(host="127.0.0.1", port=12345, auto_keys=True, custom_p=None, cust
     print("=" * 70)
 
     # 1. Server Key Generation
+    if interactive:
+        custom_p, custom_q, custom_e = get_interactive_server_inputs()
+
     if custom_p and custom_q:
         print(f"\n[+] Using provided primes for Server RSA: p={custom_p}, q={custom_q}, e={custom_e}")
         pub_key, priv_key, params = generate_keypair_from_primes(custom_p, custom_q, custom_e)
@@ -177,9 +204,10 @@ def main():
     parser.add_argument("--p", type=int, default=None, help="Optional prime p for Server RSA")
     parser.add_argument("--q", type=int, default=None, help="Optional prime q for Server RSA")
     parser.add_argument("--e", type=int, default=65537, help="Public exponent e (default: 65537)")
+    parser.add_argument("--interactive", action="store_true", help="Prompt interactively for key parameters")
     args = parser.parse_args()
 
-    run_server(host=args.host, port=args.port, custom_p=args.p, custom_q=args.q, custom_e=args.e)
+    run_server(host=args.host, port=args.port, custom_p=args.p, custom_q=args.q, custom_e=args.e, interactive=args.interactive)
 
 
 if __name__ == "__main__":
