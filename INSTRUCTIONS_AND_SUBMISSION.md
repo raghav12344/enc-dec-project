@@ -40,9 +40,9 @@ py main.py
 
 | Requirement from Question Paper | How It Is Satisfied | Verified Location |
 | :--- | :--- | :--- |
-| **1. Platform Independent & Command Line Executable** | Built with pure Python 3 without external libraries. Works on Windows, Linux, and macOS via CLI. | `server.py`, `client.py`, `whirlpool.py` |
-| **2. Author Name & Roll No in Code Comments** | Author header and inline comments embedded in every single file: `Author: Raghav Gupta`, `Roll No: 20243226`. | Lines 1–15 in all `.py` files |
-| **3. Readme File Explaining All Functions & Files** | Comprehensive `README.md` explaining mathematical derivations, protocol flowchart, and every single function and class. | `README.md` |
+| **1. Platform Independent & Command Line Executable** | Built with pure Python 3 without external libraries. Works on Windows, Linux, and macOS via CLI. | `server.py`, `client.py`, `algorithms/` |
+| **2. Author Name & Roll No in Code Comments** | Author header and inline comments embedded in every single file: `Author: Raghav Gupta`, `Roll No: 20243226`. | Lines 1–15 in all `.py` files across root, `algorithms/`, and `network/` |
+| **3. Readme File Explaining All Functions & Files** | Comprehensive `README.md` explaining mathematical derivations, protocol flowchart, modular packages, and every function and class. | `README.md` |
 | **4. Submit ZIP Containing All Files & Readme** | Packaged into `20243226_Raghav_Gupta.zip`. | `20243226_Raghav_Gupta.zip` |
 | **5. Sample Output Files & Execution Window Screenshots** | Individual logs (`client_output.txt`, `server_output.txt`) and high-resolution terminal window screenshots (`client_execution_screenshot.png`, `server_execution_screenshot.png`). | Included in root & zip |
 | **6. Rename ZIP to Roll Number and Name** | Exactly named: `20243226_Raghav_Gupta.zip`. | Root directory |

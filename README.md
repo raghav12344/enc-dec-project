@@ -280,26 +280,59 @@ S-DES operates on an 8-bit plaintext block under a 10-bit master key:
 
 ---
 
-## 4. Complete Directory of Files and Functions
+## 4. Complete Directory of Modular Packages, Files and Functions
 
-| File | Functions / Classes | Purpose & Functionality |
+The project follows a strict modular separation of concerns:
+```text
+crypto assignment/
+├── algorithms/                      <-- Core cryptographic algorithms
+│   ├── __init__.py                  <-- Unified package interface
+│   ├── sdes.py                      <-- Part 1: Simplified DES (S-DES)
+│   ├── rsa.py                       <-- Part 2: RSA Cryptosystem & Digital Signatures
+│   └── whirlpool.py                 <-- Part 3: ISO Whirlpool Hash (From scratch)
+├── network/                         <-- Network communication layer
+│   ├── __init__.py                  <-- Package interface
+│   └── protocol.py                  <-- Packet schemas & socket framing
+├── client.py                        <-- Client application entry point
+├── server.py                        <-- Server application entry point
+├── main.py                          <-- Master interactive CLI launcher
+├── run.bat                          <-- Windows 1-click desktop launcher
+├── test_suite.py                    <-- Comprehensive unit test suite
+├── run_demo.py                      <-- Automated batch runner & screenshot generator
+├── .gitignore                       <-- Professional git ignore configuration
+├── .vscode/                         <-- VS Code launch and task configurations
+│   ├── launch.json
+│   └── tasks.json
+├── README.md                        <-- Comprehensive academic documentation
+├── INSTRUCTIONS_AND_SUBMISSION.md   <-- Instructor evaluation guide
+├── client_output.txt                <-- Captured client execution log
+├── server_output.txt                <-- Captured server execution log
+├── client_execution_screenshot.png  <-- Client execution window screenshot
+├── server_execution_screenshot.png  <-- Server execution window screenshot
+└── 20243226_Raghav_Gupta.zip        <-- Final submission archive
+```
+
+### 4.1 Detailed Module and Function Specifications
+
+| Module / File | Functions / Classes | Purpose & Functionality |
 | :--- | :--- | :--- |
-| **`whirlpool.py`** | `_gf_mul(a, b)`<br>`_build_tables()`<br>`Whirlpool` class<br>`Whirlpool.update(data)`<br>`Whirlpool._transform(block)`<br>`Whirlpool.digest()`<br>`Whirlpool.hexdigest()`<br>`whirlpool_hash(data)` | Implements ISO/IEC 10118-3 Whirlpool hashing from scratch. Computes Galois Field operations, 8 circular lookup tables, 10-round Miyaguchi-Preneel compression, and returns 512-bit digests. |
-| **`sdes.py`** | `permute(bits, table)`<br>`left_shift(bits, n)`<br>`generate_subkeys(key_10bit)`<br>`_sbox_lookup(nibble, box)`<br>`_round_function(r, k)`<br>`encrypt_block_with_trace()`<br>`decrypt_block_with_trace()`<br>`encrypt_message()`<br>`decrypt_message()`<br>`format_encryption_trace()`<br>`format_decryption_trace()` | Complete S-DES implementation. Derives subkeys $K_1, K_2$, executes rounds with permutations and S-boxes, encrypts/decrypts strings block-by-block, and formats intermediate process traces. |
-| **`rsa.py`** | `extended_gcd(a, b)`<br>`mod_inverse(e, phi)`<br>`is_prime(n, k)`<br>`generate_prime(bits)`<br>`generate_keypair_from_primes()`<br>`generate_rsa_keys(bits)`<br>`encrypt_rsa(m, pub)`<br>`decrypt_rsa(c, priv)`<br>`sign_digest(digest, priv)`<br>`verify_digest_signature()` | Complete RSA cryptosystem. Implements Miller-Rabin primality, modular inverse, prime pair generation ($n > 2^{512}$), secret key encryption/decryption, and Whirlpool signature signing & verification. |
-| **`server.py`** | `get_interactive_server_inputs()`<br>`run_server(host, port, ...)`<br>`main()` | Server TCP application. Prompts for/generates server RSA keys, listens for connections, provides public key, decrypts secret key via RSA, decrypts ciphertext via S-DES, computes Whirlpool hash, verifies digital signature, and prints formatted output. |
-| **`client.py`** | `get_interactive_inputs()`<br>`run_client(host, port, ...)`<br>`main()` | Client TCP application. Connects to server, prompts for/generates client RSA keys, encrypts 10-bit secret key via RSA, encrypts message via S-DES, hashes message via Whirlpool, signs hash via RSA, sends bundle, and prints formatted output. |
-| **`main.py`** | `clear_screen()`<br>`print_banner()`<br>`run_side_by_side_demo()`<br>`run_inline_server()`<br>`run_inline_client()`<br>`run_test_suite()`<br>`run_batch_demo()`<br>`package_zip()`<br>`main()` | Master interactive CLI menu enabling one-click live multi-window execution, interactive server/client launches, automated tests, screenshot generation, and zip packaging. |
-| **`run_demo.py`** | `capture_execution()`<br>`render_terminal_screenshot()` | Automated batch execution script that captures stdout to text files and renders realistic high-resolution terminal execution window screenshots. |
-| **`run.bat`** | Windows Batch Script | One-click Windows desktop launcher to immediately launch `main.py`. |
-| **`.gitignore`** | Git configuration | Professional git ignore file excluding Python bytecode (`__pycache__`), virtualenvs, and OS artifacts. |
-| **`test_suite.py`** | `TestCryptoAssignment` unit tests | Validates S-DES textbook vectors, ISO Whirlpool test vectors, RSA arithmetic, and full socket communication. |
-| **`client_output.txt`** | Text Log | Raw console execution output of the Client application. |
-| **`server_output.txt`** | Text Log | Raw console execution output of the Server application. |
-| **`client_execution_screenshot.png`** | Image | Execution window screenshot of the Client encryption process. |
-| **`server_execution_screenshot.png`** | Image | Execution window screenshot of the Server decryption and signature verification process. |
-| **`INSTRUCTIONS_AND_SUBMISSION.md`** | Evaluation Report | Mapping of assignment questions and rules to the project codebase. |
-| **`20243226_Raghav_Gupta.zip`** | Zip Archive | Final submission package named strictly according to Rule 6. |
+| **`algorithms/sdes.py`** | `permute(bits, table)`<br>`left_shift(bits, n)`<br>`generate_subkeys(key_10bit)`<br>`_sbox_lookup(nibble, box)`<br>`_round_function(r, k)`<br>`encrypt_block_with_trace()`<br>`decrypt_block_with_trace()`<br>`encrypt_message()`<br>`decrypt_message()`<br>`format_encryption_trace()`<br>`format_decryption_trace()` | **Part 1 Symmetric Block Cipher.** Generates 8-bit subkeys $K_1, K_2$ via $P10, LS-1, LS-2, P8$. Executes 2-round Feistel network with $IP, EP, S_0/S_1, P4, SW, IP^{-1}$. Encrypts/decrypts arbitrary strings block-by-block with granular tracing. |
+| **`algorithms/rsa.py`** | `extended_gcd(a, b)`<br>`mod_inverse(e, phi)`<br>`is_prime(n, k)`<br>`generate_prime(bits)`<br>`generate_keypair_from_primes()`<br>`generate_rsa_keys(bits)`<br>`encrypt_rsa(m, pub)`<br>`decrypt_rsa(c, priv)`<br>`sign_digest(digest, priv)`<br>`verify_digest_signature()` | **Part 2 Asymmetric Cryptosystem.** Derives $(e, n)$ and $(d, n)$ with Miller-Rabin primality ($k=40$) and Extended Euclidean modular inverse. Performs secret key encryption/decryption ($c = m^e \pmod n$) and Whirlpool digital signature signing and verification ($V = S^e \pmod n$). |
+| **`algorithms/whirlpool.py`** | `_gf_mul(a, b)`<br>`_build_tables()`<br>`Whirlpool` class<br>`Whirlpool.update(data)`<br>`Whirlpool._transform(block)`<br>`Whirlpool.digest()`<br>`Whirlpool.hexdigest()`<br>`whirlpool_hash(data)` | **Part 3 Cryptographic Hash (from scratch).** Pure Python ISO/IEC 10118-3 implementation. Performs $GF(2^8)$ multiplication modulo irreducible polynomial `0x11D`, precomputes 8 circular round tables, runs 10-round Miyaguchi-Preneel compression, and generates 512-bit digests (128 hex chars). |
+| **`algorithms/__init__.py`** | Unified Package API | Exposes unified algorithm interfaces for modular imports. |
+| **`network/protocol.py`** | `MessageProtocol`<br>`send_json(sock, dict)`<br>`recv_json(sock, buffer)` | **Network Framing & Schemas.** Defines standard message schemas (`REQ_PUBLIC_KEY`, `RESP_PUBLIC_KEY`, `PAYLOAD`, `ACK`), handles JSON framing, newline delimitation, and socket serialization. |
+| **`network/__init__.py`** | Network Package API | Exposes protocol message builders and transmission functions. |
+| **`server.py`** | `get_interactive_server_inputs()`<br>`run_server(host, port, ...)`<br>`main()` | **Server Application Entry Point.** Prompts for/generates Server RSA keys, coordinates socket connection, decrypts secret key with RSA, decrypts ciphertext with S-DES, hashes recovered message, verifies digital signature, and prints formatted output. |
+| **`client.py`** | `get_interactive_inputs()`<br>`run_client(host, port, ...)`<br>`main()` | **Client Application Entry Point.** Prompts for Message, Secret Key, and RSA key parameters, retrieves Server Public Key, encrypts secret key with RSA, encrypts message with S-DES, hashes message with Whirlpool, signs hash with RSA, and transmits payload bundle. |
+| **`main.py`** | `run_side_by_side_demo()`<br>`run_inline_server()`<br>`run_inline_client()`<br>`run_test_suite()`<br>`run_batch_demo()`<br>`package_zip()` | **Master Control Panel.** Interactive numbered CLI menu enabling multi-window demo launches, interactive testing, and automated zip re-packaging. |
+| **`run_demo.py`** | `capture_execution()`<br>`render_terminal_screenshot()` | **Automated Demo & Visualizer.** Runs client and server end-to-end, logs stdout to `.txt` files, and renders high-resolution Windows terminal window screenshots (`.png`). |
+| **`run.bat`** | Windows Batch Script | One-click desktop launcher to immediately start `main.py` in Windows. |
+| **`test_suite.py`** | `TestCryptoAssignment` | Comprehensive unit tests for S-DES textbook vectors, Whirlpool ISO vectors, RSA arithmetic, and socket network integration. |
+| **`sdes.py`, `rsa.py`, `whirlpool.py`** | Re-exporters | Root-level re-exporters forwarding to `algorithms/` for backward compatibility. |
+| **`client_output.txt`, `server_output.txt`** | Text Logs | Raw execution output logs for Client and Server matching the exact required format. |
+| **`client_execution_screenshot.png`, `server_execution_screenshot.png`** | Images | Rendered terminal window screenshots of Client encryption and Server decryption. |
+| **`INSTRUCTIONS_AND_SUBMISSION.md`** | Evaluation Report | Mapping of assignment requirements to code with grading audit. |
+| **`20243226_Raghav_Gupta.zip`** | Zip Archive | Final submission package containing all modules and documentation. |
 
 ---
 
