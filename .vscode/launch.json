@@ -1,0 +1,48 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "1. Run Master Menu (main.py)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/main.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "2. Run Server (server.py)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/server.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "3. Run Client (Interactive)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/client.py",
+      "args": ["--interactive"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "4. Run Client (Default Demo)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/client.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "5. Run Test Suite (test_suite.py)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/test_suite.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "6. Run Demo & Generate Screenshots",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_demo.py",
+      "console": "integratedTerminal"
+    }
+  ]
+}
