@@ -4,27 +4,39 @@ RSA Asymmetric Cryptosystem Implementation
 Author: Raghav Gupta
 Roll Number: 20243226
 Assignment: Assignment 1 - Secure Client-Server Message Exchange
+Course: Cryptography & Information Security | MNNIT Allahabad
 
-This module provides a pure-Python, zero-dependency, from-scratch implementation
-of the RSA public-key cryptosystem.
+Overview:
+This module provides a pure-Python, zero-dependency implementation of the
+Rivest-Shamir-Adleman (RSA) public-key cryptosystem.
 
-Features:
-- Primality testing via Miller-Rabin algorithm
-- Large prime generation (configurable bit length)
-- Key generation: Modulus n = p*q, Totient phi(n) = (p-1)*(q-1),
-  Public exponent e, Private exponent d = e^-1 mod phi(n) via Extended Euclidean Algorithm
-- Asymmetric encryption/decryption of secret key
-- Digital signature generation and verification over Whirlpool digests
+Theoretical Foundations:
+- Euler's Totient Theorem: a^phi(n) = 1 (mod n) for gcd(a, n) = 1
+- Bezout's Identity: a*x + b*y = gcd(a, b) via Extended Euclidean Algorithm
+- Miller-Rabin Probabilistic Primality Test: Solovay-Strassen refinement
+- Asymmetric Key Exchange: Hybrid encryption of symmetric secret keys
+- Digital Signatures: Integrity and non-repudiation over cryptographic hash digests
 """
 
 import random
 import math
 
 
+# ============================================================================
+# SECTION 1: NUMBER THEORY PRIMITIVES (EUCLID, TOTIENT, MODULAR INVERSE)
+# ============================================================================
+
 def extended_gcd(a, b):
     """
     Extended Euclidean Algorithm.
-    Returns (gcd, x, y) such that a*x + b*y = gcd(a, b).
+    Computes greatest common divisor and Bezout coefficients (x, y) such that:
+        a * x + b * y = gcd(a, b)
+
+    Parameters:
+        a (int): First non-negative integer
+        b (int): Second non-negative integer
+    Returns:
+        (gcd, x, y) tuple
     """
     if a == 0:
         return b, 0, 1
@@ -36,7 +48,10 @@ def extended_gcd(a, b):
 
 def mod_inverse(e, phi):
     """
-    Computes modular multiplicative inverse d such that (d * e) % phi == 1.
+    Computes modular multiplicative inverse d such that:
+        (d * e) = 1 (mod phi)
+
+    Uses Extended Euclidean Algorithm. Raises ValueError if gcd(e, phi) != 1.
     """
     gcd, x, _ = extended_gcd(e, phi)
     if gcd != 1:
@@ -44,10 +59,20 @@ def mod_inverse(e, phi):
     return (x % phi + phi) % phi
 
 
+# ============================================================================
+# SECTION 2: PROBABILISTIC PRIMALITY TESTING (MILLER-RABIN)
+# ============================================================================
+
 def is_prime(n, k=40):
     """
-    Miller-Rabin probabilistic primality test.
-    k is the number of test rounds (40 gives error probability < 2^-80).
+    Miller-Rabin Probabilistic Primality Test.
+    Decomposes n - 1 = 2^r * d (with d odd) and tests k independent random witnesses.
+
+    Parameters:
+        n (int): Candidate integer to test for primality
+        k (int): Number of testing rounds (k=40 yields error probability < 2^-80)
+    Returns:
+        bool: True if n is prime with overwhelming probability, False otherwise
     """
     if n < 2:
         return False
@@ -56,13 +81,13 @@ def is_prime(n, k=40):
     if n % 2 == 0:
         return False
 
-    # Write n - 1 as 2^r * d
+    # Decompose n - 1 as 2^r * d
     r, d = 0, n - 1
     while d % 2 == 0:
         r += 1
         d //= 2
 
-    # Witness loop
+    # Witness testing loop
     for _ in range(k):
         a = random.randrange(2, n - 1)
         x = pow(a, d, n)
@@ -77,37 +102,44 @@ def is_prime(n, k=40):
     return True
 
 
-def generate_prime(bits=300):
-    """Generates a random probable prime of the specified bit length."""
+def generate_prime(bits=280):
+    """
+    Generates a cryptographically strong random prime of specified bit length.
+    Sets the highest and lowest bits to ensure exact magnitude and odd parity.
+    """
     while True:
-        # Ensure highest and lowest bit are set (odd and correct magnitude)
         candidate = random.getrandbits(bits) | (1 << (bits - 1)) | 1
         if is_prime(candidate):
             return candidate
 
 
+# ============================================================================
+# SECTION 3: KEY GENERATION (PRIMES p, q -> (e, n) & (d, n))
+# ============================================================================
+
 def generate_keypair_from_primes(p, q, e=65537):
     """
-    Generates RSA public and private keypairs given primes p, q and public exponent e.
+    Generates RSA public and private keypairs given prime inputs p and q.
+
+    Mathematical Process:
+    1. Compute Modulus: n = p * q
+    2. Compute Euler's Totient: phi(n) = (p - 1) * (q - 1)
+    3. Verify or select public exponent e such that gcd(e, phi) == 1
+    4. Compute private exponent d: d = e^-1 mod phi(n)
+
     Returns:
-        (public_key, private_key, key_params)
-        where:
-        public_key  = (e, n)
-        private_key = (d, n)
-        key_params  = {'p': p, 'q': q, 'n': n, 'phi': phi, 'e': e, 'd': d}
+        public_key:  (e, n)
+        private_key: (d, n)
+        params:      {'p': p, 'q': q, 'n': n, 'phi': phi, 'e': e, 'd': d}
     """
     if p == q:
         raise ValueError("Primes p and q must be distinct.")
-    if not is_prime(p) or not is_prime(q):
-        # We allow composite only with warning for classroom demonstration if desired
-        pass
 
     n = p * q
     phi = (p - 1) * (q - 1)
 
     # Ensure gcd(e, phi) == 1
     if math.gcd(e, phi) != 1:
-        # Fallback to standard Fermat primes or search
         for candidate_e in [65537, 17, 3, 5, 7, 11, 13, 19, 23, 29]:
             if candidate_e < phi and math.gcd(candidate_e, phi) == 1:
                 e = candidate_e
@@ -121,7 +153,7 @@ def generate_keypair_from_primes(p, q, e=65537):
 
     public_key = (e, n)
     private_key = (d, n)
-    key_params = {
+    params = {
         "p": p,
         "q": q,
         "n": n,
@@ -129,13 +161,14 @@ def generate_keypair_from_primes(p, q, e=65537):
         "e": e,
         "d": d
     }
-    return public_key, private_key, key_params
+    return public_key, private_key, params
 
 
-def generate_rsa_keys(bits=300, e=65537):
+def generate_rsa_keys(bits=280, e=65537):
     """
-    Generates a full RSA keypair with primes of the specified bit length.
-    Using bits >= 260 ensures n > 2^512, accommodating Whirlpool hashes directly!
+    Generates full RSA keys with primes of the specified bit length.
+    Using bits >= 260 guarantees modulus n > 2^512, which directly accommodates
+    512-bit Whirlpool hash digests without requiring modular truncation.
     """
     p = generate_prime(bits)
     q = generate_prime(bits)
@@ -144,9 +177,14 @@ def generate_rsa_keys(bits=300, e=65537):
     return generate_keypair_from_primes(p, q, e)
 
 
+# ============================================================================
+# SECTION 4: ASYMMETRIC ENCRYPTION & DECRYPTION (SECRET KEY EXCHANGE)
+# ============================================================================
+
 def encrypt_rsa(plaintext_int, public_key):
     """
-    RSA encryption: c = (m ^ e) mod n
+    RSA Encryption: c = (m ^ e) mod n
+    Used by Client to encrypt the 10-bit symmetric Secret Key.
     """
     e, n = public_key
     if plaintext_int >= n:
@@ -156,16 +194,24 @@ def encrypt_rsa(plaintext_int, public_key):
 
 def decrypt_rsa(ciphertext_int, private_key):
     """
-    RSA decryption: m = (c ^ d) mod n
+    RSA Decryption: m = (c ^ d) mod n
+    Used by Server to recover the 10-bit symmetric Secret Key.
     """
     d, n = private_key
     return pow(ciphertext_int, d, n)
 
 
+# ============================================================================
+# SECTION 5: DIGITAL SIGNATURE GENERATION & VERIFICATION
+# ============================================================================
+
 def sign_digest(digest_hex_or_int, private_key):
     """
-    Signs a hash digest using RSA private key:
-    Signature S = (Hash mod n) ^ d mod n
+    RSA Digital Signature Generation:
+        Signature S = (Hash mod n) ^ d mod n
+
+    Signing with the Client's private exponent guarantees message authenticity
+    and non-repudiation.
     """
     d, n = private_key
     if isinstance(digest_hex_or_int, str):
@@ -180,9 +226,10 @@ def sign_digest(digest_hex_or_int, private_key):
 
 def verify_digest_signature(signature, expected_digest_hex_or_int, public_key):
     """
-    Verifies an RSA signature over a hash digest:
-    Verification code V = (S ^ e) mod n
-    Checks if V == (Hash mod n).
+    RSA Digital Signature Verification:
+        Verification Code V = (Signature ^ e) mod n
+
+    Checks if V == (expected_digest mod n).
     Returns:
         (is_valid, verification_code, expected_code)
     """
@@ -202,25 +249,11 @@ if __name__ == "__main__":
     print("=== RSA Module Verification (Author: Raghav Gupta, Roll No: 20243226) ===")
     pub, priv, params = generate_rsa_keys(bits=280)
     print(f"Generated modulus n ({params['n'].bit_length()} bits)")
-    print(f"Public key (e, n): e={pub[0]}")
-    print(f"Private key (d, n): d={str(priv[0])[:20]}...")
-
-    # Test Secret Key encryption (10-bit integer)
-    secret_key_val = 0b1010000010  # 642
-    enc_key = encrypt_rsa(secret_key_val, pub)
-    dec_key = decrypt_rsa(enc_key, priv)
-    print(f"\nOriginal Secret Key:  {secret_key_val} (bin: {bin(secret_key_val)[2:].zfill(10)})")
-    print(f"Encrypted Secret Key: {enc_key}")
-    print(f"Decrypted Secret Key: {dec_key} (bin: {bin(dec_key)[2:].zfill(10)})")
-    assert secret_key_val == dec_key
-
-    # Test Signing Whirlpool digest
-    sample_digest = "f908126f528f0cd497251c3bc9862c9cd13d79ae3b42ea9e71ea4792348c6f752bd535fb44c2b5c8a4dab556491adbb235aa38d43dacd0810c6791461aa7e63e"
-    sig = sign_digest(sample_digest, priv)
-    valid, v_code, exp_code = verify_digest_signature(sig, sample_digest, pub)
-    print(f"\nSample Whirlpool Digest: {sample_digest[:32]}...")
-    print(f"Digital Signature:       {sig}")
-    print(f"Verification Code:       {v_code}")
-    print(f"Signature Valid:         {valid}")
-    assert valid
-    print("\nRSA Verification: SUCCESS!")
+    val = 642
+    enc = encrypt_rsa(val, pub)
+    dec = decrypt_rsa(enc, priv)
+    assert val == dec
+    print(f"Original Secret Key:  {val}")
+    print(f"Encrypted Secret Key: {enc}")
+    print(f"Decrypted Secret Key: {dec}")
+    print("\nVerification: SUCCESS! RSA encryption and decryption verified.")

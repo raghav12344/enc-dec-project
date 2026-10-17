@@ -139,17 +139,24 @@ def run_server(host="127.0.0.1", port=12345, auto_keys=True, custom_p=None, cust
             client_signature = int(payload["client_signature"])
             client_pub_key = (int(payload["client_public_key"]["e"]), int(payload["client_public_key"]["n"]))
 
-            # Step 3: Decrypt Secret Key using Server's RSA Private Key
+            # ----------------------------------------------------------------
+            # SERVER-SIDE COMPUTATIONS
+            # (Refer to Page 2: Server side Computation)
+            # ----------------------------------------------------------------
+            # Step 1: Decrypt secret key using asymmetric key decryption process (RSA)
+            #         Secret_Key = (Encrypted_Secret_Key ^ d_server) mod n_server
             decrypted_key_int = decrypt_rsa(enc_secret_key, priv_key)
             secret_key_bin = bin(decrypted_key_int)[2:].zfill(10)
 
-            # Step 4: Decrypt Ciphertext using S-DES
+            # Step 2: Decrypt ciphertext using symmetric key decryption process (S-DES)
+            #         Input: Ciphertext & Decrypted Secret Key -> Output: Message
             decrypted_message, dec_traces, k_trace = decrypt_message(ciphertext, secret_key_bin)
 
-            # Step 5: Compute Whirlpool Hash of Decrypted Message
+            # Step 3: Compute hash of message using Whirlpool algorithm from scratch
             computed_hash_hex = whirlpool_hash(decrypted_message)
 
-            # Step 6: Verify Client Digital Signature using Client's RSA Public Key
+            # Step 4: Verify digital signature using client public key
+            #         Verification Code V = (Signature ^ e_client) mod n_client
             is_valid, verification_code, expected_code = verify_digest_signature(
                 client_signature, computed_hash_hex, client_pub_key
             )
@@ -157,7 +164,9 @@ def run_server(host="127.0.0.1", port=12345, auto_keys=True, custom_p=None, cust
             sig_status = "valid" if is_valid else "invalid"
             msg_status = "Accepted" if is_valid else "Rejected"
 
-            # 4. Display Outputs strictly according to the format required by assignment
+            # ----------------------------------------------------------------
+            # DISPLAY OUTPUT (Strictly matches format on Page 3)
+            # ----------------------------------------------------------------
             print("\n" + "=" * 70)
             print("REQUIRED ASSIGNMENT OUTPUT (SERVER SIDE)")
             print("Author: Raghav Gupta | Roll No: 20243226")

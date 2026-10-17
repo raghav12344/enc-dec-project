@@ -156,30 +156,45 @@ def run_client(
 
         print("[+] Connected to Server successfully.")
 
-        # Step 1: Request Server Public Key
+        # --------------------------------------------------------------------
+        # MESSAGE FLOW STEP 1: Client requests public key of the server
+        # (Refer to Page 1: Message Flow -> Bullet 1)
+        # --------------------------------------------------------------------
         req = MessageProtocol.request_server_key()
         send_json(sock, req)
         print("[*] Sent request for Server Public Key.")
 
-        # Step 2: Receive Server Public Key
+        # --------------------------------------------------------------------
+        # MESSAGE FLOW STEP 2: Server sends the public key
+        # (Refer to Page 1: Message Flow -> Bullet 2)
+        # --------------------------------------------------------------------
         resp_json = recv_json(sock)
         server_pub_key = (int(resp_json["e"]), int(resp_json["n"]))
         print(f"[+] Received Server Public Key: (e={server_pub_key[0]}, n={server_pub_key[1]})")
 
-        # 4. Client Side Computations
-        # A. Encrypt Secret Key using Server Public Key
+        # --------------------------------------------------------------------
+        # CLIENT-SIDE COMPUTATIONS
+        # (Refer to Page 1 & Page 2: Client side computation)
+        # --------------------------------------------------------------------
+        # A. Encrypt Secret Key with RSA using Server Public Key:
+        #    c_key = (Secret_Key ^ e_server) mod n_server
         encrypted_secret_key = encrypt_rsa(secret_key_int, server_pub_key)
 
-        # B. Encrypt Message using S-DES
+        # B. Encrypt Message through assigned symmetric key algorithm (Part 1: S-DES):
+        #    Input: Message and Secret Key -> Output: Ciphertext
         ciphertext_hex, enc_traces, k_trace = encrypt_message(message, secret_key)
 
-        # C. Compute Whirlpool Hash of original Message
+        # C. Compute hash of message using Whirlpool algorithm from scratch:
+        #    Output: 512-bit Message Digest
         hash_code_hex = whirlpool_hash(message)
 
-        # D. Compute Digital Signature over Whirlpool Hash using Client Private Key
+        # D. Compute digital signature over computed hash using asymmetric key algorithm (Part 2: RSA):
+        #    Signature S = (Hash mod n_client) ^ d_client mod n_client
         digital_signature = sign_digest(hash_code_hex, priv_key)
 
-        # 5. Display Client Outputs strictly according to the format required by assignment
+        # --------------------------------------------------------------------
+        # DISPLAY OUTPUT (Strictly matches format on Page 2 and Page 3)
+        # --------------------------------------------------------------------
         print("\n" + "=" * 70)
         print("REQUIRED ASSIGNMENT OUTPUT (CLIENT SIDE)")
         print("Author: Raghav Gupta | Roll No: 20243226")

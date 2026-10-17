@@ -314,29 +314,131 @@ crypto assignment/
 
 ### 4.1 Detailed Module and Function Specifications
 
-| Module / File | Functions / Classes | Purpose & Functionality |
-| :--- | :--- | :--- |
-| **`algorithms/sdes.py`** | `permute(bits, table)`<br>`left_shift(bits, n)`<br>`generate_subkeys(key_10bit)`<br>`_sbox_lookup(nibble, box)`<br>`_round_function(r, k)`<br>`encrypt_block_with_trace()`<br>`decrypt_block_with_trace()`<br>`encrypt_message()`<br>`decrypt_message()`<br>`format_encryption_trace()`<br>`format_decryption_trace()` | **Part 1 Symmetric Block Cipher.** Generates 8-bit subkeys $K_1, K_2$ via $P10, LS-1, LS-2, P8$. Executes 2-round Feistel network with $IP, EP, S_0/S_1, P4, SW, IP^{-1}$. Encrypts/decrypts arbitrary strings block-by-block with granular tracing. |
-| **`algorithms/rsa.py`** | `extended_gcd(a, b)`<br>`mod_inverse(e, phi)`<br>`is_prime(n, k)`<br>`generate_prime(bits)`<br>`generate_keypair_from_primes()`<br>`generate_rsa_keys(bits)`<br>`encrypt_rsa(m, pub)`<br>`decrypt_rsa(c, priv)`<br>`sign_digest(digest, priv)`<br>`verify_digest_signature()` | **Part 2 Asymmetric Cryptosystem.** Derives $(e, n)$ and $(d, n)$ with Miller-Rabin primality ($k=40$) and Extended Euclidean modular inverse. Performs secret key encryption/decryption ($c = m^e \pmod n$) and Whirlpool digital signature signing and verification ($V = S^e \pmod n$). |
-| **`algorithms/whirlpool.py`** | `_gf_mul(a, b)`<br>`_build_tables()`<br>`Whirlpool` class<br>`Whirlpool.update(data)`<br>`Whirlpool._transform(block)`<br>`Whirlpool.digest()`<br>`Whirlpool.hexdigest()`<br>`whirlpool_hash(data)` | **Part 3 Cryptographic Hash (from scratch).** Pure Python ISO/IEC 10118-3 implementation. Performs $GF(2^8)$ multiplication modulo irreducible polynomial `0x11D`, precomputes 8 circular round tables, runs 10-round Miyaguchi-Preneel compression, and generates 512-bit digests (128 hex chars). |
-| **`algorithms/__init__.py`** | Unified Package API | Exposes unified algorithm interfaces for modular imports. |
-| **`network/protocol.py`** | `MessageProtocol`<br>`send_json(sock, dict)`<br>`recv_json(sock, buffer)` | **Network Framing & Schemas.** Defines standard message schemas (`REQ_PUBLIC_KEY`, `RESP_PUBLIC_KEY`, `PAYLOAD`, `ACK`), handles JSON framing, newline delimitation, and socket serialization. |
-| **`network/__init__.py`** | Network Package API | Exposes protocol message builders and transmission functions. |
-| **`server.py`** | `get_interactive_server_inputs()`<br>`run_server(host, port, ...)`<br>`main()` | **Server Application Entry Point.** Prompts for/generates Server RSA keys, coordinates socket connection, decrypts secret key with RSA, decrypts ciphertext with S-DES, hashes recovered message, verifies digital signature, and prints formatted output. |
-| **`client.py`** | `get_interactive_inputs()`<br>`run_client(host, port, ...)`<br>`main()` | **Client Application Entry Point.** Prompts for Message, Secret Key, and RSA key parameters, retrieves Server Public Key, encrypts secret key with RSA, encrypts message with S-DES, hashes message with Whirlpool, signs hash with RSA, and transmits payload bundle. |
-| **`main.py`** | `run_side_by_side_demo()`<br>`run_inline_server()`<br>`run_inline_client()`<br>`run_test_suite()`<br>`run_batch_demo()`<br>`package_zip()` | **Master Control Panel.** Interactive numbered CLI menu enabling multi-window demo launches, interactive testing, and automated zip re-packaging. |
-| **`run_demo.py`** | `capture_execution()`<br>`render_terminal_screenshot()` | **Automated Demo & Visualizer.** Runs client and server end-to-end, logs stdout to `.txt` files, and renders high-resolution Windows terminal window screenshots (`.png`). |
-| **`run.bat`** | Windows Batch Script | One-click desktop launcher to immediately start `main.py` in Windows. |
-| **`test_suite.py`** | `TestCryptoAssignment` | Comprehensive unit tests for S-DES textbook vectors, Whirlpool ISO vectors, RSA arithmetic, and socket network integration. |
-| **`sdes.py`, `rsa.py`, `whirlpool.py`** | Re-exporters | Root-level re-exporters forwarding to `algorithms/` for backward compatibility. |
-| **`client_output.txt`, `server_output.txt`** | Text Logs | Raw execution output logs for Client and Server matching the exact required format. |
-| **`client_execution_screenshot.png`, `server_execution_screenshot.png`** | Images | Rendered terminal window screenshots of Client encryption and Server decryption. |
-| **`INSTRUCTIONS_AND_SUBMISSION.md`** | Evaluation Report | Mapping of assignment requirements to code with grading audit. |
-| **`20243226_Raghav_Gupta.zip`** | Zip Archive | Final submission package containing all modules and documentation. |
+| Module / File | Internal Sections | Functions / Classes | Purpose & Functionality |
+| :--- | :--- | :--- | :--- |
+| **`algorithms/sdes.py`** | **7 Sections:**<br>§1 Permutation Arrays & S-Box Definitions<br>§2 Bitwise Helper Functions<br>§3 Key Schedule Generator<br>§4 Feistel Round Function<br>§5 Block-Level Engines<br>§6 String-Level Interfaces<br>§7 Trace Formatters | `permute(bits, table)`<br>`left_shift(bits, n)`<br>`generate_subkeys(key_10bit)`<br>`_sbox_lookup(nibble, box)`<br>`_round_function(r, k)`<br>`encrypt_block_with_trace()`<br>`decrypt_block_with_trace()`<br>`encrypt_message()`<br>`decrypt_message()`<br>`format_encryption_trace()`<br>`format_decryption_trace()` | **Part 1 Symmetric Block Cipher.** Generates 8-bit subkeys $K_1, K_2$ via $P10, LS\text{-}1, LS\text{-}2, P8$. Executes 2-round Feistel network with $IP, EP, S_0/S_1, P4, SW, IP^{-1}$. Encrypts/decrypts arbitrary strings block-by-block with granular tracing. Textbook references: *Stallings* Ch. 4 & *Schaefer (1996)*. |
+| **`algorithms/rsa.py`** | **5 Sections:**<br>§1 Number Theory Primitives<br>§2 Miller-Rabin Primality Test<br>§3 Key Generation<br>§4 Asymmetric Encryption/Decryption<br>§5 Digital Signatures | `extended_gcd(a, b)`<br>`mod_inverse(e, phi)`<br>`is_prime(n, k)`<br>`generate_prime(bits)`<br>`generate_keypair_from_primes()`<br>`generate_rsa_keys(bits)`<br>`encrypt_rsa(m, pub)`<br>`decrypt_rsa(c, priv)`<br>`sign_digest(digest, priv)`<br>`verify_digest_signature()` | **Part 2 Asymmetric Cryptosystem.** Derives $(e, n)$ and $(d, n)$ with Miller-Rabin primality ($k=40$) and Extended Euclidean modular inverse. Performs secret key encryption/decryption and Whirlpool digital signature signing and verification. Documents Bezout's Identity and Euler's Totient Theorem inline. |
+| **`algorithms/whirlpool.py`** | **3 Sections:**<br>§1 GF(2⁸) Arithmetic & Table Precomputation<br>§2 Miyaguchi-Preneel Compression Engine<br>§3 Public Convenience Helper | `_gf_mul(a, b)`<br>`_build_tables()`<br>`Whirlpool` class<br>`Whirlpool.update(data)`<br>`Whirlpool._transform(block)`<br>`Whirlpool.digest()`<br>`Whirlpool.hexdigest()`<br>`whirlpool_hash(data)` | **Part 3 Cryptographic Hash (from scratch).** Pure Python ISO/IEC 10118-3 implementation. Performs $GF(2^8)$ multiplication modulo irreducible polynomial `0x11D`, precomputes 8 circular round tables, runs 10-round Miyaguchi-Preneel compression, and generates 512-bit digests (128 hex chars). |
+| **`algorithms/__init__.py`** | — | Unified Package API | Exposes unified algorithm interfaces for modular imports. |
+| **`network/protocol.py`** | — | `MessageProtocol`<br>`send_json(sock, dict)`<br>`recv_json(sock, buffer)` | **Network Framing & Schemas.** Defines standard message schemas (`REQ_PUBLIC_KEY`, `RESP_PUBLIC_KEY`, `PAYLOAD`, `ACK`), handles JSON framing, newline delimitation, and socket serialization. |
+| **`network/__init__.py`** | — | Network Package API | Exposes protocol message builders and transmission functions. |
+| **`server.py`** | Step-by-step comments cite exact **Page 2 & Page 3** bullet points from the question paper | `get_interactive_server_inputs()`<br>`run_server(host, port, ...)`<br>`main()` | **Server Application Entry Point.** Prompts for RSA key parameters, receives encrypted payload, decrypts secret key with RSA, decrypts ciphertext with S-DES, hashes recovered message with Whirlpool, verifies digital signature, and prints formatted output. |
+| **`client.py`** | Step-by-step comments cite exact **Page 1 & Page 2** bullet points from the question paper | `get_interactive_inputs()`<br>`run_client(host, port, ...)`<br>`main()` | **Client Application Entry Point.** Prompts for Message, Secret Key, Public Key, and Private Key parameters, retrieves Server Public Key, encrypts secret key with RSA, encrypts message with S-DES, hashes message with Whirlpool, signs hash with RSA, and transmits payload bundle. |
+| **`main.py`** | — | `run_side_by_side_demo()`<br>`run_inline_server()`<br>`run_inline_client()`<br>`run_test_suite()`<br>`run_batch_demo()`<br>`package_zip()` | **Master Control Panel.** Interactive numbered CLI menu enabling multi-window demo launches, interactive testing, and automated zip re-packaging. |
+| **`run_demo.py`** | — | `capture_execution()`<br>`render_terminal_screenshot()` | **Automated Demo & Visualizer.** Runs client and server end-to-end, logs stdout to `.txt` files, and renders high-resolution terminal window screenshots (`.png`). |
+| **`run.bat`** | — | Windows Batch Script | One-click desktop launcher to immediately start `main.py` in Windows. |
+| **`test_suite.py`** | — | `TestCryptoAssignment` | Comprehensive unit tests for S-DES textbook vectors, Whirlpool ISO vectors, RSA arithmetic, and socket network integration. |
+| **`sdes.py`, `rsa.py`, `whirlpool.py`** | — | Re-exporters | Root-level re-exporters forwarding to `algorithms/` for backward compatibility. |
+| **`client_output.txt`, `server_output.txt`** | — | Text Logs | Raw execution output logs for Client and Server matching the exact required format. |
+| **`client_execution_screenshot.png`, `server_execution_screenshot.png`** | — | Images | Rendered terminal window screenshots of Client encryption and Server decryption. |
+| **`INSTRUCTIONS_AND_SUBMISSION.md`** | — | Evaluation Report | Mapping of assignment requirements to code with grading audit. |
+| **`20243226_Raghav_Gupta.zip`** | — | Zip Archive | Final submission package containing all modules and documentation. |
 
 ---
 
-## 5. Execution Instructions for Evaluation
+## 5. Academic Code Annotations Guide
+
+Every `.py` file in this project is structured for easy inspection by an evaluator or professor. Each algorithm file is divided into numbered **SECTION banners** visible at the top level without any IDE navigation required.
+
+### 5.1 How to Navigate the Source Code
+
+Open any algorithm file — the section banners appear as large block comments:
+
+```python
+# ============================================================================
+# SECTION 1: PERMUTATION ARRAYS & S-BOX DEFINITIONS (STANDARD STALLINGS)
+# ============================================================================
+```
+
+This makes it immediately clear **where each part of the algorithm lives** and **which textbook it comes from**.
+
+### 5.2 Per-File Annotation Structure
+
+```mermaid
+flowchart LR
+    subgraph SDES["algorithms/sdes.py — 7 Sections"]
+        S1["§1 Permutation Arrays\n(P10, P8, IP, EP, P4, S0, S1)"]
+        S2["§2 Bitwise Helpers\n(permute, left_shift)"]
+        S3["§3 Key Schedule\n(generate_subkeys → K1, K2)"]
+        S4["§4 Feistel Round\n(_sbox_lookup, _round_function)"]
+        S5["§5 Block Engines\n(encrypt_block, decrypt_block)"]
+        S6["§6 String Interfaces\n(encrypt_message, decrypt_message)"]
+        S7["§7 Trace Formatters\n(format_encryption_trace, ...)"]
+        S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7
+    end
+
+    subgraph RSA["algorithms/rsa.py — 5 Sections"]
+        R1["§1 Number Theory Primitives\n(extended_gcd, mod_inverse)"]
+        R2["§2 Miller-Rabin Primality\n(is_prime, generate_prime)"]
+        R3["§3 Key Generation\n(generate_keypair_from_primes)"]
+        R4["§4 Encryption/Decryption\n(encrypt_rsa, decrypt_rsa)"]
+        R5["§5 Digital Signatures\n(sign_digest, verify_digest_signature)"]
+        R1 --> R2 --> R3 --> R4 --> R5
+    end
+
+    subgraph WP["algorithms/whirlpool.py — 3 Sections"]
+        W1["§1 GF(2^8) Arithmetic\n(_gf_mul, _build_tables)"]
+        W2["§2 Compression Engine\n(Whirlpool class, _transform)"]
+        W3["§3 Public Helper\n(whirlpool_hash)"]
+        W1 --> W2 --> W3
+    end
+```
+
+### 5.3 Inline Docstring Format
+
+Every function carries a docstring in the following academic format:
+
+```python
+def generate_subkeys(key_10bit):
+    """
+    S-DES Key Schedule — Generates subkeys K1 and K2 from a 10-bit master key.
+
+    Algorithm (from Stallings, Chapter 4):
+        1. Apply P10 permutation to the 10-bit key
+        2. Split into two 5-bit halves (L, R)
+        3. Circular Left Shift by 1 position (LS-1) on both halves
+        4. Apply P8 to combined halves → Subkey K1 (8 bits)
+        5. Circular Left Shift by 2 more positions (LS-2) on shifted halves
+        6. Apply P8 to combined halves → Subkey K2 (8 bits)
+
+    Parameters:
+        key_10bit (list[int]): 10-element list of 0/1 bits
+    Returns:
+        (K1, K2): tuple of two 8-element bit lists
+    """
+```
+
+### 5.4 client.py & server.py Question Paper Citations
+
+Both `client.py` and `server.py` contain inline comments that map each processing step directly to the exact bullet point from the assignment question paper:
+
+```python
+# --- STEP 2 (Page 1, Bullet 2): Encrypt Secret Key with Server's Public Key ---
+# The 10-bit integer secret key is encrypted using RSA: c = m^e mod n
+# where (e, n) = server_public_key
+encrypted_secret_key = encrypt_rsa(secret_key_int, server_public_key)
+```
+
+This means a professor can open `client.py`, find the comment citing "Page 1, Bullet 2", and immediately cross-reference it with the question paper — **no guesswork required**.
+
+### 5.5 No External Libraries Used
+
+```python
+# Standard library only — guaranteed zero installation for any evaluator
+import socket
+import json
+import random
+import math
+import struct
+import os
+import sys
+```
+
+All cryptographic operations (prime generation, modular exponentiation, GF arithmetic) are implemented from scratch using only Python built-ins.
+
+---
+
+## 6. Execution Instructions for Evaluation
 
 The application is written in standard Python 3 and runs on any platform with **zero external dependencies**.
 
@@ -375,9 +477,9 @@ py test_suite.py
 
 ---
 
-## 6. Exact Formatted Execution Output
+## 7. Exact Formatted Execution Output
 
-### 6.1 Client Side Output (Matches Required Template):
+### 7.1 Client Side Output (Matches Required Template):
 ```text
 Client Side:
 Input: Message: <ANTIGRAVITY SECURE PROTOCOL - RAGHAV GUPTA (20243226)>
@@ -436,7 +538,7 @@ Hash code: <fd7b348520c15e0a64618da2abd975bf6dd4991bb06c20cf8bf7a72f80ab84e5210e
 Digital Signature: <1196850174425335996620642141383777095915052422921150604922165174064005122335396726622619572881512853048012004008047184393010087772441384041170849518399153024753790393247>
 ```
 
-### 6.2 Server Side Output (Matches Required Template):
+### 7.2 Server Side Output (Matches Required Template):
 ```text
 Server Side:
 Input: Public Key parameters: (e=65537, n=2423798548860765760040562872152925396393896995348787681268917065207347503245451823176969367834795381184142089174392651492496844298527623500350274629419878043242667614543)
@@ -494,7 +596,7 @@ Message: <Accepted>
 
 ---
 
-## 7. Submission Checklist Verification
+## 8. Submission Checklist Verification
 
 - [x] **Platform Independent & Command Line Executable (Rule 1):** Pure Python 3 standard library, executable on any OS without pip dependencies.
 - [x] **Author Details in Every Code File (Rule 2):** Name (`Raghav Gupta`) and Roll Number (`20243226`) explicitly stated in every file header and docstring.
