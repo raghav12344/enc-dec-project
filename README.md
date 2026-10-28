@@ -2,7 +2,7 @@
 ### Cryptography & Information Security - Assignment 1
 
 ![Author](https://img.shields.io/badge/Author-Raghav%20Gupta-blue?style=for-the-badge)
-![Roll No](https://img.shields.io/badge/Roll%20No-20243226-orange?style=for-the-badge)
+![Roll No](https://img.shields.io/badge/Roll%20No-44275-orange?style=for-the-badge)
 ![Institution](https://img.shields.io/badge/MNNIT-Allahabad-red?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.13-brightgreen?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/Platform-Independent-blueviolet?style=for-the-badge)
@@ -13,31 +13,37 @@
 ## Academic Credentials & Metadata
 
 * **Author:** Raghav Gupta
-* **Registration / Roll Number:** 20243226
+* **Registration / Roll Number:** 44275
 * **Degree:** Bachelor of Technology (B.Tech)
 * **Branch:** Computer Science and Engineering
 * **Department:** Department of Computer Science & Engineering (CSED)
 * **Institution:** Motilal Nehru National Institute of Technology (MNNIT) Allahabad
 * **Course:** Information Security / Cryptography & Network Security
 * **Submission Portal:** [Google Forms Submission Link](https://forms.gle/VS3dnQFCf37K9q2j7)
-* **Final Submission Archive:** `20243226_Raghav_Gupta.zip`
+* **Final Submission Archive:** `44275_Raghav_Gupta.zip`
 
 ---
 
 ## 1. Algorithm Selection Mapping
 
-Based on the assignment formula using Roll Number **20243226**:
+Based on the assignment formula from Page 3 of the question paper using Roll Number **44275**:
 
 ### 1.1 Symmetric Key Algorithm Assignment
-$$\text{Roll No.} \pmod 3 = 20243226 \pmod 3$$
-$$\text{Sum of digits} = 2 + 0 + 2 + 4 + 3 + 2 + 2 + 6 = 21$$
-$$21 \pmod 3 = 0 \implies \mathbf{Simplified\ DES\ (S\text{-}DES)}$$
+$$\text{Roll No.} \pmod 3 = 44275 \pmod 3$$
+$$\text{Sum of digits} = 4 + 4 + 2 + 7 + 5 = 22$$
+$$22 \pmod 3 = 1 \implies \mathbf{AES\ variant\ (Simplified\ AES\ /\ S\text{-}AES)}$$
+
+*Reference: Question Paper Page 3, Item 1: "else if (your_rollNo.)%3=1, use AES variant"*
 
 ### 1.2 Asymmetric Key Algorithm Assignment
-$$\text{Roll No.} \pmod 2 = 20243226 \pmod 2 = 0 \implies \mathbf{RSA}$$
+$$\text{Roll No.} \pmod 2 = 44275 \pmod 2 = 1 \implies \mathbf{Elgamal}$$
+
+*Reference: Question Paper Page 3, Item 2: "else use Elgamal"*
 
 ### 1.3 Cryptographic Hash Algorithm
 $$\mathbf{Whirlpool\ Hash\ Algorithm\ (Created\ from\ Scratch\ -\ ISO/IEC\ 10118\text{-}3)}$$
+
+*Reference: Question Paper Page 1: "The hashing will be done using the Whirlpool hash algorithm created from scratch."*
 
 ---
 
@@ -48,28 +54,28 @@ The diagram below illustrates the exact cryptographic workflow implemented acros
 
 ```mermaid
 flowchart TD
-    subgraph ClientSide["CLIENT APPLICATION"]
+    subgraph ClientSide["CLIENT APPLICATION (Raghav Gupta - 44275)"]
         direction TB
-        C_KP["Client Key Parameters (p, q, e)"] --> C_KeyGen["Client RSA Key Generation"]
-        C_KeyGen --> C_Pub["Client Public Key (e_c, n_c)"]
-        C_KeyGen --> C_Priv["Client Private Key (d_c, n_c)"]
+        C_KP["Client Key Parameters (p, g, x_c)"] --> C_KeyGen["Client ElGamal Key Generation"]
+        C_KeyGen --> C_Pub["Client Public Key (p, g, y_c)"]
+        C_KeyGen --> C_Priv["Client Private Key (p, g, x_c)"]
         
-        Msg["Plaintext Message"] --> SDES_Enc["S-DES Symmetric Encryption"]
-        SecKey["10-bit Secret Key"] --> SDES_Enc
-        SDES_Enc --> Ciphertext["Ciphertext (Hex)"]
+        Msg["Plaintext Message"] --> SAES_Enc["Simplified AES (S-AES) Encryption"]
+        SecKey["16-bit Secret Key"] --> SAES_Enc
+        SAES_Enc --> Ciphertext["Ciphertext (Hex)"]
         
-        SecKey --> RSA_Enc["RSA Asymmetric Encryption"]
-        Serv_Pub["Server Public Key (e_s, n_s)"] --> RSA_Enc
-        RSA_Enc --> EncSecKey["Encrypted Secret Key"]
+        SecKey --> EG_Enc["ElGamal Asymmetric Encryption"]
+        Serv_Pub["Server Public Key (p, g, y_s)"] --> EG_Enc
+        EG_Enc --> EncSecKey["Encrypted Secret Key (c1, c2)"]
         
         Msg --> Whirlpool_C["Whirlpool Hashing (from scratch)"]
         Whirlpool_C --> Digest_C["Message Digest (512-bit)"]
         
-        Digest_C --> RSA_Sign["RSA Digital Signature Generation"]
-        C_Priv --> RSA_Sign
-        RSA_Sign --> Signature["Client Digital Signature"]
+        Digest_C --> EG_Sign["ElGamal Digital Signature Generation"]
+        C_Priv --> EG_Sign
+        EG_Sign --> Signature["Client Signature (r, s)"]
         
-        Payload["Payload Bundle:\n• Ciphertext\n• Encrypted Secret Key\n• Client Signature\n• Client Public Key"]
+        Payload["Payload Bundle:\n• Ciphertext\n• Encrypted Secret Key (c1, c2)\n• Client Signature (r, s)\n• Client Public Key (p, g, y_c)"]
         Ciphertext --> Payload
         EncSecKey --> Payload
         Signature --> Payload
@@ -78,39 +84,39 @@ flowchart TD
 
     subgraph NetworkChannel["TCP NETWORK SOCKET CHANNEL (Port 12345)"]
         ReqPub["1. Request Server Public Key"]
-        SendPub["2. Send Server Public Key (e_s, n_s)"]
+        SendPub["2. Send Server Public Key (p, g, y_s)"]
         SendPayload["3. Transmit Secure Payload Bundle"]
         SendACK["4. Transmit Status ACK (Accepted / Valid)"]
     end
 
-    subgraph ServerSide["SERVER APPLICATION"]
+    subgraph ServerSide["SERVER APPLICATION (Raghav Gupta - 44275)"]
         direction TB
-        S_KP["Server Key Parameters (p, q, e)"] --> S_KeyGen["Server RSA Key Generation"]
-        S_KeyGen --> Serv_Pub_Local["Server Public Key (e_s, n_s)"]
-        S_KeyGen --> S_Priv["Server Private Key (d_s, n_s)"]
+        S_KP["Server Key Parameters (p, g, x_s)"] --> S_KeyGen["Server ElGamal Key Generation"]
+        S_KeyGen --> Serv_Pub_Local["Server Public Key (p, g, y_s)"]
+        S_KeyGen --> S_Priv["Server Private Key (p, g, x_s)"]
         
         RxPayload["Received Payload Bundle"]
-        RxPayload --> Ext_EncSecKey["Encrypted Secret Key"]
+        RxPayload --> Ext_EncSecKey["Encrypted Secret Key (c1, c2)"]
         RxPayload --> Ext_Ciphertext["Ciphertext"]
-        RxPayload --> Ext_Signature["Client Signature"]
-        RxPayload --> Ext_CPub["Client Public Key (e_c, n_c)"]
+        RxPayload --> Ext_Signature["Client Signature (r, s)"]
+        RxPayload --> Ext_CPub["Client Public Key (p, g, y_c)"]
         
-        Ext_EncSecKey --> RSA_Dec["RSA Asymmetric Decryption"]
-        S_Priv --> RSA_Dec
-        RSA_Dec --> DecSecKey["Decrypted 10-bit Secret Key"]
+        Ext_EncSecKey --> EG_Dec["ElGamal Asymmetric Decryption"]
+        S_Priv --> EG_Dec
+        EG_Dec --> DecSecKey["Decrypted 16-bit Secret Key"]
         
-        Ext_Ciphertext --> SDES_Dec["S-DES Symmetric Decryption"]
-        DecSecKey --> SDES_Dec
-        SDES_Dec --> RecMsg["Decrypted Plaintext Message"]
+        Ext_Ciphertext --> SAES_Dec["Simplified AES (S-AES) Decryption"]
+        DecSecKey --> SAES_Dec
+        SAES_Dec --> RecMsg["Decrypted Plaintext Message"]
         
         RecMsg --> Whirlpool_S["Whirlpool Hashing (from scratch)"]
         Whirlpool_S --> CompHash["Computed Hash Digest"]
         
-        Ext_Signature --> RSA_Verify["RSA Signature Verification"]
-        Ext_CPub --> RSA_Verify
-        RSA_Verify --> VerCode["Verification Code"]
+        Ext_Signature --> EG_Verify["ElGamal Signature Verification"]
+        Ext_CPub --> EG_Verify
+        EG_Verify --> VerCode["Verification Value (v1 == v2)"]
         
-        CompHash --> Check{"VerCode == CompHash ?"}
+        CompHash --> Check{"v1 == v2 ?"}
         VerCode --> Check
         Check -- "Yes" --> ValidStatus["Signature: VALID\nMessage: ACCEPTED"]
         Check -- "No" --> InvalidStatus["Signature: INVALID\nMessage: REJECTED"]
@@ -130,107 +136,86 @@ The time-ordered network interaction between the Client and Server:
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Client as Client Application (Raghav Gupta - 20243226)
+    participant Client as Client Application (Raghav Gupta - 44275)
     participant Socket as TCP Socket (127.0.0.1:12345)
-    participant Server as Server Application (Raghav Gupta - 20243226)
+    participant Server as Server Application (Raghav Gupta - 44275)
 
-    Note over Server: Server starts and binds to socket<br/>Generates Server RSA Keys (e_s, n_s) & (d_s, n_s)
-    Note over Client: Client starts<br/>Prompts for Message, Secret Key & RSA parameters
+    Note over Server: Server starts and binds to socket<br/>Generates Server ElGamal Keys (p, g, y_s) & (p, g, x_s)
+    Note over Client: Client starts<br/>Prompts for Message, 16-bit Secret Key & ElGamal parameters
 
     Client->>Socket: Connect to Server
     Socket->>Server: Establish TCP Connection
     
     Client->>Server: {"type": "REQUEST_SERVER_PUBLIC_KEY"}
-    Server-->>Client: {"type": "SERVER_PUBLIC_KEY", "e": e_s, "n": n_s}
+    Server-->>Client: {"type": "SERVER_PUBLIC_KEY", "algo": "ElGamal", "p": p, "g": g, "y": y_s}
 
-    Note over Client: 1. Encrypt Secret Key with Server Public Key<br/>2. Encrypt Message with S-DES<br/>3. Compute Whirlpool Hash of Message<br/>4. Sign Whirlpool Hash with Client Private Key
+    Note over Client: 1. Encrypt Secret Key with Server Public Key: (c1, c2)<br/>2. Encrypt Message with S-AES<br/>3. Compute Whirlpool Hash of Message (512-bit)<br/>4. Sign Whirlpool Hash with Client Private Key: (r, s)
 
-    Client->>Server: {"type": "PAYLOAD", "ciphertext": ..., "encrypted_secret_key": ..., "client_signature": ..., "client_public_key": ...}
+    Client->>Server: {"type": "PAYLOAD", "ciphertext": ..., "encrypted_secret_key": [c1, c2], "client_signature": [r, s], "client_public_key": [p, g, y_c]}
 
-    Note over Server: 1. Decrypt Secret Key with Server Private Key<br/>2. Decrypt Ciphertext with S-DES<br/>3. Compute Whirlpool Hash of recovered Message<br/>4. Verify Client Signature with Client Public Key
+    Note over Server: 1. Decrypt Secret Key with Server Private Key: s = c1^x mod p, K = c2 * s^(-1) mod p<br/>2. Decrypt Ciphertext with S-AES using recovered Secret Key<br/>3. Compute Whirlpool Hash of recovered Message<br/>4. Verify Client Signature: v1 = g^h mod p == (y^r * r^s) mod p = v2
 
     Server-->>Client: {"type": "ACK", "status": "Accepted", "signature": "valid"}
-    Note over Client,Server: Connection cleanly closed. Outputs displayed.
+    Note over Client,Server: Connection cleanly closed. Required formatted outputs displayed.
 ```
 
 ---
 
-### 2.3 Simplified DES (S-DES) Cryptographic Engine
-The block-by-block data path of the 10-bit key schedule and 2-round Feistel structure:
+### 2.3 Simplified AES (S-AES) Cryptographic Engine
+The block-by-block data path of the 16-bit key schedule and 2-round Substitution-Permutation Network (SPN):
 
 ```mermaid
 flowchart TD
-    subgraph KeySchedule["S-DES Key Generation Schedule"]
-        MasterKey["10-bit Master Key"] --> P10["P10 Permutation\n[3, 5, 2, 7, 4, 10, 1, 9, 8, 6]"]
-        P10 --> SplitK["Split into Left(5) and Right(5)"]
-        SplitK --> LS1["Circular Left Shift 1 (LS-1)"]
-        LS1 --> P8_1["P8 Permutation\n[6, 3, 7, 4, 8, 5, 10, 9]"]
-        P8_1 --> Subkey1["Subkey K1 (8 bits)"]
-        LS1 --> LS2["Circular Left Shift 2 (LS-2)"]
-        LS2 --> P8_2["P8 Permutation\n[6, 3, 7, 4, 8, 5, 10, 9]"]
-        P8_2 --> Subkey2["Subkey K2 (8 bits)"]
+    subgraph KeySchedule["S-AES Key Expansion (16-bit Master Key)"]
+        MasterKey["16-bit Master Key (w0, w1)"] --> W0W1["w0 (bits 15..8), w1 (bits 7..0)"]
+        W0W1 --> Round0Key["Round 0 Key (K0 = w0 || w1)"]
+        
+        W0W1 --> G1["g(w1) = SubNib(RotNib(w1)) ^ Rcon(1)"]
+        G1 --> W2["w2 = w0 ^ g(w1)"]
+        W2 --> W3["w3 = w2 ^ w1"]
+        W3 --> Round1Key["Round 1 Key (K1 = w2 || w3)"]
+        
+        W3 --> G2["g(w3) = SubNib(RotNib(w3)) ^ Rcon(2)"]
+        G2 --> W4["w4 = w2 ^ g(w3)"]
+        W4 --> W5["w5 = w4 ^ w3"]
+        W5 --> Round2Key["Round 2 Key (K2 = w4 || w5)"]
     end
 
-    subgraph FeistelEngine["S-DES 2-Round Feistel Encryption"]
-        PT["8-bit Plaintext Block"] --> IP["Initial Permutation (IP)\n[2, 6, 3, 1, 4, 8, 5, 7]"]
-        IP --> SplitIP["Split into L0 (4 bits) and R0 (4 bits)"]
+    subgraph SPNEngine["S-AES 2-Round SPN Encryption Engine"]
+        PT["16-bit Plaintext Block"] --> MatrixMap["Map to 2x2 State Matrix:\n[[s00, s01], [s10, s11]]"]
+        MatrixMap --> ARK0["AddRoundKey (K0)"]
         
-        SplitIP --> R0_EP["EP Expansion Permutation\n[4, 1, 2, 3, 2, 3, 4, 1]"]
-        Subkey1 --> XOR1["XOR with K1"]
-        R0_EP --> XOR1
-        XOR1 --> SBoxes1["S-Box Substitution (S0 & S1)"]
-        SBoxes1 --> P4_1["P4 Permutation\n[2, 4, 3, 1]"]
-        SplitIP --> XOR_L0["XOR with L0"]
-        P4_1 --> XOR_L0
+        ARK0 --> Sub1["Round 1: SubNibbles (4-bit S-Box)"]
+        Sub1 --> Shift1["Round 1: ShiftRows (Swap s10 and s11)"]
+        Shift1 --> Mix1["Round 1: MixColumns over GF(2^4)\nMatrix: [[1, 4], [4, 1]]"]
+        Mix1 --> ARK1["Round 1: AddRoundKey (K1)"]
         
-        XOR_L0 --> Swap["Switch / Swap Function (SW)\nLeft = R0, Right = L0 ^ F1"]
+        ARK1 --> Sub2["Round 2: SubNibbles (4-bit S-Box)"]
+        Sub2 --> Shift2["Round 2: ShiftRows (Swap s10 and s11)"]
+        Shift2 --> ARK2["Round 2: AddRoundKey (K2)\n(MixColumns skipped in final round)"]
         
-        Swap --> R1_EP["EP Expansion Permutation"]
-        Subkey2 --> XOR2["XOR with K2"]
-        R1_EP --> XOR2
-        XOR2 --> SBoxes2["S-Box Substitution (S0 & S1)"]
-        SBoxes2 --> P4_2["P4 Permutation"]
-        Swap --> XOR_L1["XOR with Left"]
-        P4_2 --> XOR_L1
-        
-        XOR_L1 --> Combine["Pre-output (L2 + R2 without swap)"]
-        Swap --> Combine
-        Combine --> IP_Inv["Inverse Initial Permutation (IP^-1)\n[4, 1, 3, 5, 7, 2, 8, 6]"]
-        IP_Inv --> CT["8-bit Ciphertext Block"]
+        ARK2 --> CT["16-bit Ciphertext Block"]
     end
 ```
 
 ---
 
-### 2.4 Whirlpool Miyaguchi-Preneel Compression Engine
-The pure from-scratch implementation of ISO/IEC 10118-3 Whirlpool hashing:
+### 2.4 ElGamal Cryptosystem & Digital Signature Engine
 
 ```mermaid
 flowchart LR
-    subgraph MP_Scheme["Miyaguchi-Preneel Construction"]
-        PrevH["Previous State H_(i-1)\n(512 bits / 64 bytes)"]
-        Block["Padded Message Block m_i\n(512 bits / 64 bytes)"]
-        
-        PrevH --> KeyInput["Cipher Key Input (K)"]
-        Block --> PlainInput["Cipher Block Input (m)"]
-        
-        subgraph WCipher["10-Round W Block Cipher"]
-            Round0["Round 1: gamma -> pi -> theta -> sigma"]
-            RoundMid["... Rounds 2 to 9 ..."]
-            Round10["Round 10: SubBytes, ShiftColumns, MixRows, AddRoundKey"]
-            Round0 --> RoundMid --> Round10
-        end
-        
-        KeyInput --> Round0
-        PlainInput --> Round0
-        
-        Round10 --> CipherOutput["Cipher Output W(H_(i-1), m_i)"]
-        
-        CipherOutput --> FinalXOR["Bitwise XOR (3-way)"]
-        PrevH --> FinalXOR
-        Block --> FinalXOR
-        
-        FinalXOR --> NewH["Updated State H_i\n(512 bits / 128 Hex Chars)"]
+    subgraph EG_EncFlow["ElGamal Secret Key Exchange"]
+        K_Sym["16-bit Symmetric Secret Key (m)"] --> EncCalc["Choose random k coprime to p-1\nc1 = g^k mod p\nc2 = (m * y_s^k) mod p"]
+        EncCalc --> CipherPair["Ciphertext Pair: (c1, c2)"]
+        CipherPair --> DecCalc["Server Shared Secret: s = c1^x_s mod p\nm = (c2 * s^(-1)) mod p"]
+        DecCalc --> RecKey["Recovered Secret Key (m)"]
+    end
+
+    subgraph EG_SigFlow["ElGamal Digital Signature Scheme"]
+        HashVal["Whirlpool 512-bit Hash (h)"] --> SigCalc["Choose random k coprime to p-1\nr = g^k mod p\ns = (h - x_c * r) * k^(-1) mod (p-1)"]
+        SigCalc --> SigPair["Digital Signature: (r, s)"]
+        SigPair --> VerCalc["v1 = g^h mod p\nv2 = (y_c^r * r^s) mod p\nValid iff v1 == v2"]
+        VerCalc --> SigDecision["Verification Result: <valid>"]
     end
 ```
 
@@ -238,41 +223,56 @@ flowchart LR
 
 ## 3. Mathematical Specifications
 
-### 3.1 Simplified DES (S-DES)
-S-DES operates on an 8-bit plaintext block under a 10-bit master key:
-- **Key Generation:**
-  - $P10 = [3, 5, 2, 7, 4, 10, 1, 9, 8, 6]$
-  - Split into two 5-bit halves $(L_0, R_0)$.
-  - Circular left shift by 1 position ($LS\text{-}1$) on both halves $\to (L_1, R_1)$.
-  - Apply $P8 = [6, 3, 7, 4, 8, 5, 10, 9] \to \text{Subkey } K_1$.
-  - Circular left shift by 2 positions ($LS\text{-}2$) on $(L_1, R_1) \to (L_2, R_2)$.
-  - Apply $P8 \to \text{Subkey } K_2$.
-- **Encryption Process:**
-  - Initial Permutation: $IP = [2, 6, 3, 1, 4, 8, 5, 7]$.
-  - Expansion Permutation: $EP = [4, 1, 2, 3, 2, 3, 4, 1]$ expanding 4 bits to 8 bits.
-  - S-Box substitution matrices:
-    $$S_0 = \begin{pmatrix} 1 & 0 & 3 & 2 \\ 3 & 2 & 1 & 0 \\ 0 & 2 & 1 & 3 \\ 3 & 1 & 3 & 2 \end{pmatrix}, \quad S_1 = \begin{pmatrix} 0 & 1 & 2 & 3 \\ 2 & 0 & 1 & 3 \\ 3 & 0 & 1 & 0 \\ 2 & 1 & 0 & 3 \end{pmatrix}$$
-  - Permutation $P4 = [2, 4, 3, 1]$.
-  - Round 1: $L_1 = L_0 \oplus F(R_0, K_1)$, $R_1 = R_0$. Halves Swap: $(L_{sw}, R_{sw}) = (R_1, L_1)$.
-  - Round 2: $L_2 = L_{sw} \oplus F(R_{sw}, K_2)$, $R_2 = R_{sw}$ (No swap).
-  - Inverse Initial Permutation: $IP^{-1} = [4, 1, 3, 5, 7, 2, 8, 6]$.
+### 3.1 Simplified Advanced Encryption Standard (S-AES)
+S-AES operates on a 16-bit block under a 16-bit master key using arithmetic in the Galois Field $GF(2^4)$ modulo the irreducible polynomial:
+$$m(x) = x^4 + x + 1 \quad (\text{binary } 10011_2 = \texttt{0x13})$$
 
-### 3.2 RSA Public Key Cryptosystem
+- **State Representation:** 16 bits are structured as a $2 \times 2$ matrix of 4-bit nibbles:
+  $$\begin{pmatrix} s_{00} & s_{01} \\ s_{10} & s_{11} \end{pmatrix}$$
+- **S-Box (4-bit non-linear substitution):**
+  $$\text{S-Box} = [9, 4, A, B, D, 1, 8, 5, 6, 2, 0, 3, C, E, F, 7]$$
+  $$\text{Inv S-Box} = [A, 5, 9, B, 1, 7, 8, F, 6, 0, 2, 3, C, 4, D, E]$$
+- **MixColumns Matrix Multiplication:**
+  $$\begin{pmatrix} s'_{00} & s'_{01} \\ s'_{10} & s'_{11} \end{pmatrix} = \begin{pmatrix} 1 & 4 \\ 4 & 1 \end{pmatrix} \otimes \begin{pmatrix} s_{00} & s_{01} \\ s_{10} & s_{11} \end{pmatrix} \pmod{x^4 + x + 1}$$
+- **Inverse MixColumns Matrix:**
+  $$\begin{pmatrix} 1 & 4 \\ 4 & 1 \end{pmatrix}^{-1} = \begin{pmatrix} 9 & 2 \\ 2 & 9 \end{pmatrix} \pmod{x^4 + x + 1}$$
+- **Key Expansion:**
+  - $w_0 = \text{Key}[15..8], \quad w_1 = \text{Key}[7..0]$
+  - $w_2 = w_0 \oplus \text{Rcon}(1) \oplus \text{SubNib}(\text{RotNib}(w_1))$ where $\text{Rcon}(1) = \texttt{0x80}$
+  - $w_3 = w_2 \oplus w_1$
+  - $w_4 = w_2 \oplus \text{Rcon}(2) \oplus \text{SubNib}(\text{RotNib}(w_3))$ where $\text{Rcon}(2) = \texttt{0x30}$
+  - $w_5 = w_4 \oplus w_3$
+  - Round keys: $K_0 = (w_0, w_1), \quad K_1 = (w_2, w_3), \quad K_2 = (w_4, w_5)$.
+
+### 3.2 ElGamal Public Key Cryptosystem & Digital Signatures
+Based on the hardness of the Discrete Logarithm Problem (DLP) in $\mathbb{Z}_p^*$:
 - **Key Generation:**
-  - Select two distinct large prime numbers $p$ and $q$.
-  - Modulus: $n = p \times q$.
-  - Euler's totient: $\phi(n) = (p - 1)(q - 1)$.
-  - Public exponent $e$ such that $1 < e < \phi(n)$ and $\gcd(e, \phi(n)) = 1$.
-  - Private exponent $d$ using Extended Euclidean Algorithm:
-    $$d \times e \equiv 1 \pmod{\phi(n)}$$
-  - Public Key: $(e, n)$, Private Key: $(d, n)$.
-- **Secret Key Encryption:** $c = m^e \pmod n$.
-- **Secret Key Decryption:** $m = c^d \pmod n$.
-- **Digital Signature Generation:** $S = H^d \pmod n$.
-- **Digital Signature Verification:** $V = S^e \pmod n$. Valid iff $V = H \pmod n$.
+  - Large prime $p$ (512-bit safe prime) and generator $g \in \mathbb{Z}_p^*$.
+  - Private key: random integer $x \in [2, p - 2]$.
+  - Public key: $y = g^x \pmod p$.
+  - Public key tuple: $(p, g, y)$, Private key tuple: $(p, g, x)$.
+- **Secret Key Encryption:**
+  - Choose random ephemeral key $k \in [2, p - 2]$ with $\gcd(k, p - 1) = 1$.
+  - $c_1 = g^k \pmod p$.
+  - $c_2 = (m \cdot y^k) \pmod p$.
+  - Ciphertext: $(c_1, c_2)$.
+- **Secret Key Decryption:**
+  - Shared secret: $s = c_1^x \pmod p$.
+  - Modular inverse: $s^{-1} \pmod p$ via Extended Euclidean Algorithm.
+  - Recovered secret key: $m = (c_2 \cdot s^{-1}) \pmod p$.
+- **Digital Signature Generation:**
+  - Message hash integer: $h = H(M) \pmod{p - 1}$.
+  - Ephemeral key: $k \in [2, p - 2]$ with $\gcd(k, p - 1) = 1$.
+  - $r = g^k \pmod p$.
+  - $s = (k^{-1} \cdot (h - x \cdot r)) \pmod{p - 1}$.
+  - Signature: $(r, s)$.
+- **Digital Signature Verification:**
+  - $v_1 = g^h \pmod p$.
+  - $v_2 = (y^r \cdot r^s) \pmod p$.
+  - Signature is valid if and only if $v_1 \equiv v_2 \pmod p$.
 
 ### 3.3 Whirlpool Cryptographic Hash Function (from scratch)
-- **Miyaguchi-Preneel Hashing:**
+- **Miyaguchi-Preneel Hashing Construction:**
   $$H_i = W(H_{i-1}, m_i) \oplus H_{i-1} \oplus m_i$$
 - **Padding Rule:** Append '1' bit (`0x80`), followed by $k$ zero bits such that $(L + 1 + k) \equiv 256 \pmod{512}$, then append the 256-bit big-endian representation of original bit-length $L$.
 - **Galois Field Arithmetic:** Polynomial multiplication over $GF(2^8)$ modulo irreducible polynomial $x^8 + x^4 + x^3 + x^2 + 1$ (`0x11D`).
@@ -287,8 +287,8 @@ The project follows a strict modular separation of concerns:
 crypto assignment/
 ├── algorithms/                      <-- Core cryptographic algorithms
 │   ├── __init__.py                  <-- Unified package interface
-│   ├── sdes.py                      <-- Part 1: Simplified DES (S-DES)
-│   ├── rsa.py                       <-- Part 2: RSA Cryptosystem & Digital Signatures
+│   ├── saes.py                      <-- Part 1: Simplified AES (S-AES / AES Variant)
+│   ├── elgamal.py                   <-- Part 2: ElGamal Cryptosystem & Digital Signatures
 │   └── whirlpool.py                 <-- Part 3: ISO Whirlpool Hash (From scratch)
 ├── network/                         <-- Network communication layer
 │   ├── __init__.py                  <-- Package interface
@@ -297,42 +297,41 @@ crypto assignment/
 ├── server.py                        <-- Server application entry point
 ├── main.py                          <-- Master interactive CLI launcher
 ├── run.bat                          <-- Windows 1-click desktop launcher
-├── test_suite.py                    <-- Comprehensive unit test suite
+├── test_suite.py                    <-- Comprehensive unit test suite (5/5 tests passing)
 ├── run_demo.py                      <-- Automated batch runner & screenshot generator
+├── saes.py                          <-- Root re-exporter for S-AES
+├── elgamal.py                       <-- Root re-exporter for ElGamal
+├── whirlpool.py                     <-- Root re-exporter for Whirlpool
 ├── .gitignore                       <-- Professional git ignore configuration
-├── .vscode/                         <-- VS Code launch and task configurations
-│   ├── launch.json
-│   └── tasks.json
 ├── README.md                        <-- Comprehensive academic documentation
 ├── INSTRUCTIONS_AND_SUBMISSION.md   <-- Instructor evaluation guide
 ├── client_output.txt                <-- Captured client execution log
 ├── server_output.txt                <-- Captured server execution log
 ├── client_execution_screenshot.png  <-- Client execution window screenshot
 ├── server_execution_screenshot.png  <-- Server execution window screenshot
-└── 20243226_Raghav_Gupta.zip        <-- Final submission archive
+└── 44275_Raghav_Gupta.zip           <-- Final submission archive
 ```
 
 ### 4.1 Detailed Module and Function Specifications
 
 | Module / File | Internal Sections | Functions / Classes | Purpose & Functionality |
 | :--- | :--- | :--- | :--- |
-| **`algorithms/sdes.py`** | **7 Sections:**<br>§1 Permutation Arrays & S-Box Definitions<br>§2 Bitwise Helper Functions<br>§3 Key Schedule Generator<br>§4 Feistel Round Function<br>§5 Block-Level Engines<br>§6 String-Level Interfaces<br>§7 Trace Formatters | `permute(bits, table)`<br>`left_shift(bits, n)`<br>`generate_subkeys(key_10bit)`<br>`_sbox_lookup(nibble, box)`<br>`_round_function(r, k)`<br>`encrypt_block_with_trace()`<br>`decrypt_block_with_trace()`<br>`encrypt_message()`<br>`decrypt_message()`<br>`format_encryption_trace()`<br>`format_decryption_trace()` | **Part 1 Symmetric Block Cipher.** Generates 8-bit subkeys $K_1, K_2$ via $P10, LS\text{-}1, LS\text{-}2, P8$. Executes 2-round Feistel network with $IP, EP, S_0/S_1, P4, SW, IP^{-1}$. Encrypts/decrypts arbitrary strings block-by-block with granular tracing. Textbook references: *Stallings* Ch. 4 & *Schaefer (1996)*. |
-| **`algorithms/rsa.py`** | **5 Sections:**<br>§1 Number Theory Primitives<br>§2 Miller-Rabin Primality Test<br>§3 Key Generation<br>§4 Asymmetric Encryption/Decryption<br>§5 Digital Signatures | `extended_gcd(a, b)`<br>`mod_inverse(e, phi)`<br>`is_prime(n, k)`<br>`generate_prime(bits)`<br>`generate_keypair_from_primes()`<br>`generate_rsa_keys(bits)`<br>`encrypt_rsa(m, pub)`<br>`decrypt_rsa(c, priv)`<br>`sign_digest(digest, priv)`<br>`verify_digest_signature()` | **Part 2 Asymmetric Cryptosystem.** Derives $(e, n)$ and $(d, n)$ with Miller-Rabin primality ($k=40$) and Extended Euclidean modular inverse. Performs secret key encryption/decryption and Whirlpool digital signature signing and verification. Documents Bezout's Identity and Euler's Totient Theorem inline. |
-| **`algorithms/whirlpool.py`** | **3 Sections:**<br>§1 GF(2⁸) Arithmetic & Table Precomputation<br>§2 Miyaguchi-Preneel Compression Engine<br>§3 Public Convenience Helper | `_gf_mul(a, b)`<br>`_build_tables()`<br>`Whirlpool` class<br>`Whirlpool.update(data)`<br>`Whirlpool._transform(block)`<br>`Whirlpool.digest()`<br>`Whirlpool.hexdigest()`<br>`whirlpool_hash(data)` | **Part 3 Cryptographic Hash (from scratch).** Pure Python ISO/IEC 10118-3 implementation. Performs $GF(2^8)$ multiplication modulo irreducible polynomial `0x11D`, precomputes 8 circular round tables, runs 10-round Miyaguchi-Preneel compression, and generates 512-bit digests (128 hex chars). |
+| **`algorithms/saes.py`** | **6 Sections:**<br>§1 Lookup Tables & GF(2⁴) Arithmetic<br>§2 Key Expansion (w0..w5)<br>§3 Core S-AES Transformations<br>§4 Block Engines with Trace<br>§5 String Encryption/Decryption<br>§6 Trace Formatters | `gf_mult(a, b)`<br>`generate_subkeys(key)`<br>`sub_nibbles(m)`<br>`shift_rows(m)`<br>`mix_columns(m)`<br>`inv_mix_columns(m)`<br>`encrypt_block(pt, key)`<br>`decrypt_block(ct, key)`<br>`encrypt_message(msg, key)`<br>`decrypt_message(ct, key)`<br>`format_encryption_trace(...)`<br>`format_decryption_trace(...)` | **Part 1 Symmetric Block Cipher (Roll % 3 = 1).** Implements Simplified AES (S-AES) operating on 16-bit blocks under 16-bit keys over $GF(2^4)$. Expands key into 3 round keys ($w_0..w_5$), performs 2-round SPN encryption/decryption with full intermediate tracing. Verified against Musa et al. textbook vector (`0x4AF5` + `0xD728` $\to$ `0x24EC`). |
+| **`algorithms/elgamal.py`** | **4 Sections:**<br>§1 Number Theory Primitives<br>§2 Key Generation<br>§3 Asymmetric Encryption/Decryption<br>§4 Digital Signatures | `extended_gcd(a, b)`<br>`mod_inverse(a, m)`<br>`is_prime(n, k)`<br>`generate_prime(bits)`<br>`generate_keypair(p, g, x)`<br>`encrypt_elgamal(m, pub)`<br>`decrypt_elgamal(c, priv)`<br>`sign_digest(digest, priv)`<br>`verify_digest_signature(d, sig, pub)` | **Part 2 Asymmetric Cryptosystem (Roll % 2 = 1).** Implements ElGamal public key encryption and digital signature scheme using verified 512-bit safe prime. Supports secret key encryption/decryption and 512-bit Whirlpool digital signature signing and verification ($v_1 == v_2$). |
+| **`algorithms/whirlpool.py`** | **3 Sections:**<br>§1 GF(2⁸) Arithmetic & Tables<br>§2 Compression Engine<br>§3 Convenience Helper | `_gf_mul(a, b)`<br>`_build_tables()`<br>`Whirlpool` class<br>`Whirlpool.update(data)`<br>`Whirlpool._transform(block)`<br>`whirlpool_hash(data)` | **Part 3 Cryptographic Hash (from scratch).** Pure Python ISO/IEC 10118-3 implementation. Performs $GF(2^8)$ multiplication modulo irreducible polynomial `0x11D`, precomputes circular round tables, runs 10-round Miyaguchi-Preneel compression, and generates 512-bit digests (128 hex chars). |
 | **`algorithms/__init__.py`** | — | Unified Package API | Exposes unified algorithm interfaces for modular imports. |
-| **`network/protocol.py`** | — | `MessageProtocol`<br>`send_json(sock, dict)`<br>`recv_json(sock, buffer)` | **Network Framing & Schemas.** Defines standard message schemas (`REQ_PUBLIC_KEY`, `RESP_PUBLIC_KEY`, `PAYLOAD`, `ACK`), handles JSON framing, newline delimitation, and socket serialization. |
+| **`network/protocol.py`** | — | `MessageProtocol`<br>`send_json(sock, dict)`<br>`recv_json(sock, buffer)` | **Network Framing & Schemas.** Defines standard message schemas (`REQ_PUBLIC_KEY`, `RESP_PUBLIC_KEY`, `PAYLOAD`, `ACK`), handles JSON framing, newline delimitation, and socket serialization for both ElGamal $(p, g, y)$ and RSA schemas. |
 | **`network/__init__.py`** | — | Network Package API | Exposes protocol message builders and transmission functions. |
-| **`server.py`** | Step-by-step comments cite exact **Page 2 & Page 3** bullet points from the question paper | `get_interactive_server_inputs()`<br>`run_server(host, port, ...)`<br>`main()` | **Server Application Entry Point.** Prompts for RSA key parameters, receives encrypted payload, decrypts secret key with RSA, decrypts ciphertext with S-DES, hashes recovered message with Whirlpool, verifies digital signature, and prints formatted output. |
-| **`client.py`** | Step-by-step comments cite exact **Page 1 & Page 2** bullet points from the question paper | `get_interactive_inputs()`<br>`run_client(host, port, ...)`<br>`main()` | **Client Application Entry Point.** Prompts for Message, Secret Key, Public Key, and Private Key parameters, retrieves Server Public Key, encrypts secret key with RSA, encrypts message with S-DES, hashes message with Whirlpool, signs hash with RSA, and transmits payload bundle. |
-| **`main.py`** | — | `run_side_by_side_demo()`<br>`run_inline_server()`<br>`run_inline_client()`<br>`run_test_suite()`<br>`run_batch_demo()`<br>`package_zip()` | **Master Control Panel.** Interactive numbered CLI menu enabling multi-window demo launches, interactive testing, and automated zip re-packaging. |
-| **`run_demo.py`** | — | `capture_execution()`<br>`render_terminal_screenshot()` | **Automated Demo & Visualizer.** Runs client and server end-to-end, logs stdout to `.txt` files, and renders high-resolution terminal window screenshots (`.png`). |
+| **`server.py`** | Step-by-step comments cite exact **Page 2 & Page 3** bullet points | `get_interactive_server_inputs()`<br>`run_server(...)`<br>`main()` | **Server Application Entry Point.** Prompts for/generates Server ElGamal keys, coordinates socket connection, decrypts secret key with ElGamal, decrypts ciphertext with S-AES, hashes recovered message with Whirlpool, verifies digital signature, and prints formatted output. |
+| **`client.py`** | Step-by-step comments cite exact **Page 1 & Page 2** bullet points | `get_interactive_inputs()`<br>`run_client(...)`<br>`main()` | **Client Application Entry Point.** Prompts for Message, 16-bit Secret Key, and ElGamal key parameters, retrieves Server Public Key, encrypts secret key with ElGamal, encrypts message with S-AES, hashes message with Whirlpool, signs hash with ElGamal, and transmits payload bundle. |
+| **`main.py`** | — | `run_side_by_side_demo()`<br>`run_inline_server()`<br>`run_inline_client()`<br>`run_test_suite()`<br>`run_batch_demo()`<br>`package_zip()` | **Master Control Panel.** Interactive numbered CLI menu enabling multi-window demo launches, interactive testing, and automated zip re-packaging to `44275_Raghav_Gupta.zip`. |
+| **`run_demo.py`** | — | `capture_execution()`<br>`render_terminal_screenshot()` | **Automated Demo & Visualizer.** Runs client and server end-to-end, logs stdout to `.txt` files, and renders high-resolution Windows terminal window screenshots (`.png`). |
 | **`run.bat`** | — | Windows Batch Script | One-click desktop launcher to immediately start `main.py` in Windows. |
-| **`test_suite.py`** | — | `TestCryptoAssignment` | Comprehensive unit tests for S-DES textbook vectors, Whirlpool ISO vectors, RSA arithmetic, and socket network integration. |
-| **`sdes.py`, `rsa.py`, `whirlpool.py`** | — | Re-exporters | Root-level re-exporters forwarding to `algorithms/` for backward compatibility. |
+| **`test_suite.py`** | `TestCryptoAssignment` | Comprehensive unit tests for S-AES textbook vectors, Whirlpool ISO vectors, ElGamal key exchange & signature arithmetic, and socket network integration. |
 | **`client_output.txt`, `server_output.txt`** | — | Text Logs | Raw execution output logs for Client and Server matching the exact required format. |
 | **`client_execution_screenshot.png`, `server_execution_screenshot.png`** | — | Images | Rendered terminal window screenshots of Client encryption and Server decryption. |
 | **`INSTRUCTIONS_AND_SUBMISSION.md`** | — | Evaluation Report | Mapping of assignment requirements to code with grading audit. |
-| **`20243226_Raghav_Gupta.zip`** | — | Zip Archive | Final submission package containing all modules and documentation. |
+| **`44275_Raghav_Gupta.zip`** | — | Zip Archive | Final submission package containing all modules and documentation. |
 
 ---
 
@@ -346,7 +345,7 @@ Open any algorithm file — the section banners appear as large block comments:
 
 ```python
 # ============================================================================
-# SECTION 1: PERMUTATION ARRAYS & S-BOX DEFINITIONS (STANDARD STALLINGS)
+# SECTION 1: LOOKUP TABLES & GALOIS FIELD GF(2^4) ARITHMETIC
 # ============================================================================
 ```
 
@@ -356,24 +355,22 @@ This makes it immediately clear **where each part of the algorithm lives** and *
 
 ```mermaid
 flowchart LR
-    subgraph SDES["algorithms/sdes.py — 7 Sections"]
-        S1["§1 Permutation Arrays\n(P10, P8, IP, EP, P4, S0, S1)"]
-        S2["§2 Bitwise Helpers\n(permute, left_shift)"]
-        S3["§3 Key Schedule\n(generate_subkeys → K1, K2)"]
-        S4["§4 Feistel Round\n(_sbox_lookup, _round_function)"]
-        S5["§5 Block Engines\n(encrypt_block, decrypt_block)"]
-        S6["§6 String Interfaces\n(encrypt_message, decrypt_message)"]
-        S7["§7 Trace Formatters\n(format_encryption_trace, ...)"]
-        S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7
+    subgraph SAES["algorithms/saes.py — 6 Sections"]
+        S1["§1 Tables & GF(2^4)\n(SBox, InvSBox, gf_mult)"]
+        S2["§2 Key Expansion\n(w0..w5, Rcon, SubNib)"]
+        S3["§3 Core Transformations\n(SubNib, ShiftRows, MixColumns)"]
+        S4["§4 Block Engines\n(encrypt_block, decrypt_block)"]
+        S5["§5 String Interfaces\n(encrypt_message, decrypt_message)"]
+        S6["§6 Trace Formatters\n(format_encryption_trace, ...)"]
+        S1 --> S2 --> S3 --> S4 --> S5 --> S6
     end
 
-    subgraph RSA["algorithms/rsa.py — 5 Sections"]
-        R1["§1 Number Theory Primitives\n(extended_gcd, mod_inverse)"]
-        R2["§2 Miller-Rabin Primality\n(is_prime, generate_prime)"]
-        R3["§3 Key Generation\n(generate_keypair_from_primes)"]
-        R4["§4 Encryption/Decryption\n(encrypt_rsa, decrypt_rsa)"]
-        R5["§5 Digital Signatures\n(sign_digest, verify_digest_signature)"]
-        R1 --> R2 --> R3 --> R4 --> R5
+    subgraph EG["algorithms/elgamal.py — 4 Sections"]
+        E1["§1 Number Theory Primitives\n(extended_gcd, mod_inverse, is_prime)"]
+        E2["§2 Key Generation\n(generate_keypair, 512-bit safe prime)"]
+        E3["§3 Encryption/Decryption\n(encrypt_elgamal, decrypt_elgamal)"]
+        E4["§4 Digital Signatures\n(sign_digest, verify_digest_signature)"]
+        E1 --> E2 --> E3 --> E4
     end
 
     subgraph WP["algorithms/whirlpool.py — 3 Sections"]
@@ -384,57 +381,18 @@ flowchart LR
     end
 ```
 
-### 5.3 Inline Docstring Format
-
-Every function carries a docstring in the following academic format:
-
-```python
-def generate_subkeys(key_10bit):
-    """
-    S-DES Key Schedule — Generates subkeys K1 and K2 from a 10-bit master key.
-
-    Algorithm (from Stallings, Chapter 4):
-        1. Apply P10 permutation to the 10-bit key
-        2. Split into two 5-bit halves (L, R)
-        3. Circular Left Shift by 1 position (LS-1) on both halves
-        4. Apply P8 to combined halves → Subkey K1 (8 bits)
-        5. Circular Left Shift by 2 more positions (LS-2) on shifted halves
-        6. Apply P8 to combined halves → Subkey K2 (8 bits)
-
-    Parameters:
-        key_10bit (list[int]): 10-element list of 0/1 bits
-    Returns:
-        (K1, K2): tuple of two 8-element bit lists
-    """
-```
-
-### 5.4 client.py & server.py Question Paper Citations
+### 5.3 client.py & server.py Question Paper Citations
 
 Both `client.py` and `server.py` contain inline comments that map each processing step directly to the exact bullet point from the assignment question paper:
 
 ```python
 # --- STEP 2 (Page 1, Bullet 2): Encrypt Secret Key with Server's Public Key ---
-# The 10-bit integer secret key is encrypted using RSA: c = m^e mod n
-# where (e, n) = server_public_key
-encrypted_secret_key = encrypt_rsa(secret_key_int, server_public_key)
+# The 16-bit integer secret key is encrypted using ElGamal:
+# c1 = g^k mod p, c2 = (m * y^k) mod p
+encrypted_secret_key = encrypt_elgamal(secret_key_int, server_pub_key)
 ```
 
-This means a professor can open `client.py`, find the comment citing "Page 1, Bullet 2", and immediately cross-reference it with the question paper — **no guesswork required**.
-
-### 5.5 No External Libraries Used
-
-```python
-# Standard library only — guaranteed zero installation for any evaluator
-import socket
-import json
-import random
-import math
-import struct
-import os
-import sys
-```
-
-All cryptographic operations (prime generation, modular exponentiation, GF arithmetic) are implemented from scratch using only Python built-ins.
+This allows an evaluator to cross-reference every function call directly with the question paper.
 
 ---
 
@@ -453,9 +411,9 @@ You will be greeted by the interactive control panel:
 * **Select `[1]`** to instantly spawn Server and Client in **two side-by-side terminal windows**.
 * **Select `[2]`** to run the Server interactively.
 * **Select `[3]`** to run the Client in interactive mode with custom input messages and keys.
-* **Select `[4]`** to run the automated unit test suite.
+* **Select `[4]`** to run the automated unit test suite (`test_suite.py`).
 * **Select `[5]`** to run the batch demo and regenerate screenshots.
-* **Select `[6]`** to re-package the final submission ZIP.
+* **Select `[6]`** to package the final submission ZIP (`44275_Raghav_Gupta.zip`).
 
 ### Method 2: Manual Side-by-Side Terminals
 Open two separate terminal windows (or VS Code split terminals):
@@ -482,114 +440,104 @@ py test_suite.py
 ### 7.1 Client Side Output (Matches Required Template):
 ```text
 Client Side:
-Input: Message: <ANTIGRAVITY SECURE PROTOCOL - RAGHAV GUPTA (20243226)>
-Secret Key: <1010000010>
-Public Key parameters: (e=65537, n=1414619119789195648366439989948751329219586354582150811391082184793843398519446195257469136238930506151763430508881520155914590976147291059348245947042419460237033248793)
-Private key parameters: (d=292606875320236449780360109613581229212516786284322388867624549446348491849331104915969578977230070779908606743171211251204799151247015400231880911686391020542712541777, n=1414619119789195648366439989948751329219586354582150811391082184793843398519446195257469136238930506151763430508881520155914590976147291059348245947042419460237033248793)
-Encrypted Secret Key: <27535575404219596719712410773485120554274132088873023815659622460709890076005307468049078155651912431533460712256819191721379029452947615821789578162957770966087835597>
+Input: Message: <ANTIGRAVITY SECURE PROTOCOL - RAGHAV GUPTA (44275)>
+Secret Key: <1010000010110001>
+Public Key parameters: (p=12293254424529995456056407361148908763143109507734274508329448260524737144125266800879924396373184003698000873100225257723659125894915287167837699233525579, g=2, y=3804895401559689655862200839060345166583763361410594766600084040093860173508462453074398223619182662148977907100240253708405600329624639601130833990485791)
+Private key parameters: (p=12293254424529995456056407361148908763143109507734274508329448260524737144125266800879924396373184003698000873100225257723659125894915287167837699233525579, g=2, x=981241203004466191433789562586965277298312233855098834638071294380514186091746842120952573022009462846401589868136415003908135082608648811729119605807920)
+Encrypted Secret Key: <(209318762347443524821934006926186258970835384143114239476448045128563393233237955761397351664862709663407615429275527803482316372888419663048782861626897, 8626347169629634849238920973825026959777681773683911060222933728327836272264216638299493632190883041585524298462232550187042584280770298312623587890141963)>
 
 Intermediate encryption process:
---- Intermediate Encryption Process ---
-1. Key Generation (10-bit key: 1010000010):
-   P10 Permutation: 1000001100 -> Left: 10000, Right: 01100
-   Left Shift 1 (LS-1): Left: 00001, Right: 11000
-   Subkey K1 (P8 applied): 10100100
-   Left Shift 2 (LS-2): Left: 00100, Right: 00011
-   Subkey K2 (P8 applied): 01000011
+--- Intermediate Encryption Process (Simplified AES) ---
+1. Key Schedule Expansion (16-bit master key: 0xA0B1 = 1010000010110001b):
+   Words w0, w1 : w0 = 0xA0 (10100000b), w1 = 0xB1 (10110001b)
+   Words w2, w3 : w2 = 0x63 (01100011b), w3 = 0xD2 (11010010b)
+   Words w4, w5 : w4 = 0xFD (11111101b), w5 = 0x2F (00101111b)
+   -> Round 0 Key (K0): 0xA0B1 (1010000010110001b)
+   -> Round 1 Key (K1): 0x63D2 (0110001111010010b)
+   -> Round 2 Key (K2): 0xFD2F (1111110100101111b)
 
-2. Block-by-Block S-DES Encryption (showing 3 of 53 block(s)):
-   [Block 1: Char 'A' (ASCII 65 = 01000001)]
-     -> Initial Permutation (IP): 10000100 (L0: 1000, R0: 0100)
-     -> Round 1 (Subkey K1=10100100):
-        EP(R0): 00101000 ^ K1 = 10001100
-        S-boxes: S0->00, S1->01 | P4: 0100
-        L0 ^ P4 = 1100 | After Swap (SW): Left=0100, Right=1100
-     -> Round 2 (Subkey K2=01000011):
-        EP(R_sw): 01101001 ^ K2 = 00101010
-        S-boxes: S0->00, S1->00 | P4: 0000
-        Pre-output: 01001100
-     -> Inverse IP (IP^-1): 00010101
-   [Block 2: Char 'N' (ASCII 78 = 01001110)]
-     -> Initial Permutation (IP): 11000011 (L0: 1100, R0: 0011)
-     -> Round 1 (Subkey K1=10100100):
-        EP(R0): 10010110 ^ K1 = 00110010
-        S-boxes: S0->10, S1->01 | P4: 0101
-        L0 ^ P4 = 1001 | After Swap (SW): Left=0011, Right=1001
-     -> Round 2 (Subkey K2=01000011):
-        EP(R_sw): 11000011 ^ K2 = 10000000
-        S-boxes: S0->00, S1->00 | P4: 0000
-        Pre-output: 00111001
-     -> Inverse IP (IP^-1): 10110010
-   [Block 3: Char 'T' (ASCII 84 = 01010100)]
-     -> Initial Permutation (IP): 11001000 (L0: 1100, R0: 1000)
-     -> Round 1 (Subkey K1=10100100):
-        EP(R0): 01000001 ^ K1 = 11100101
-        S-boxes: S0->11, S1->01 | P4: 1101
-        L0 ^ P4 = 0001 | After Swap (SW): Left=1000, Right=0001
-     -> Round 2 (Subkey K2=01000011):
-        EP(R_sw): 10000010 ^ K2 = 11000001
-        S-boxes: S0->01, S1->10 | P4: 1010
-        Pre-output: 00100001
-     -> Inverse IP (IP^-1): 00100010
-   ... (50 remaining block(s) encrypted similarly)
+2. Block-by-Block S-AES Encryption (showing 3 of 25 block(s)):
+   [Block 1: Chars 'AN' (16-bit: 0x414E = 0100000101001110b)]
+     -> Round 0 AddRoundKey (K0): 0xE1FF
+     -> Round 1 SubNibbles      : 0xF477
+     -> Round 1 ShiftRows       : 0xF774
+     -> Round 1 MixColumns      : 0x0E4B
+     -> Round 1 AddRoundKey (K1): 0x6D99
+     -> Round 2 SubNibbles      : 0x8E22
+     -> Round 2 ShiftRows       : 0x822E
+     -> Round 2 AddRoundKey (K2): 0x7F01 (Cipher block: 0x7F01)
+   [Block 2: Chars 'TI' (16-bit: 0x5449 = 0101010001001001b)]
+     -> Round 0 AddRoundKey (K0): 0xF4F8
+     -> Round 1 SubNibbles      : 0x7D76
+     -> Round 1 ShiftRows       : 0x767D
+     -> Round 1 MixColumns      : 0xC962
+     -> Round 1 AddRoundKey (K1): 0xAAB0
+     -> Round 2 SubNibbles      : 0x0039
+     -> Round 2 ShiftRows       : 0x0930
+     -> Round 2 AddRoundKey (K2): 0xF41F (Cipher block: 0xF41F)
+   [Block 3: Chars 'GR' (16-bit: 0x4752 = 0100011101010010b)]
+     -> Round 0 AddRoundKey (K0): 0xE7E3
+     -> Round 1 SubNibbles      : 0xF5FB
+     -> Round 1 ShiftRows       : 0xFBF5
+     -> Round 1 MixColumns      : 0x528C
+     -> Round 1 AddRoundKey (K1): 0x315E
+     -> Round 2 SubNibbles      : 0xB41F
+     -> Round 2 ShiftRows       : 0xBF14
+     -> Round 2 AddRoundKey (K2): 0x423B (Cipher block: 0x423B)
+   ... (22 remaining 16-bit block(s) encrypted similarly)
 
-Cipher text: <15b222af019f153aaf22aa624f5044c19f5062a39f4722474447a56236629f1501e0153a6201c1a3221562dc231f23ba732323a293>
-Hash code: <fd7b348520c15e0a64618da2abd975bf6dd4991bb06c20cf8bf7a72f80ab84e5210e5ed41a314fba9d471a5150d8f17aad64766dd1bf8bb39afce8e8b8a075ad>
-Digital Signature: <1196850174425335996620642141383777095915052422921150604922165174064005122335396726622619572881512853048012004008047184393010087772441384041170849518399153024753790393247>
+Cipher text: <7f01f41f423b0a681f2c5b7965bb944a68fb47b398f4941465bef520408348febbc90a6870465da9441e96cf602f56348e11>
+Hash code: <366db1b285510c6290071cc42e2b58e8c31d0b8324f0e5e01a900d8d7ce139c60a7bba9d9c4ad04f53aafc0381272a589d0029f3ebc89a47e48018c0f44fdab8>
+Digital Signature: <(3029996533715078448551045257638245032465352629287590975454415834359782670007785524342055090234373174168114471415086034880174279829063566292297972571438746, 3060065496505800416404218319773607080013196357033616973205090067291475116217251962425832343016274886395764649795597827409541999679887283767392142173848160)>
 ```
 
 ### 7.2 Server Side Output (Matches Required Template):
 ```text
 Server Side:
-Input: Public Key parameters: (e=65537, n=2423798548860765760040562872152925396393896995348787681268917065207347503245451823176969367834795381184142089174392651492496844298527623500350274629419878043242667614543)
-       Private key parameters: (d=636599850794823703062059732950368568108521125180259736601948051381876994268336393675199823741140388072449902658657447877908212017734777112800433839666256039447126180713, n=2423798548860765760040562872152925396393896995348787681268917065207347503245451823176969367834795381184142089174392651492496844298527623500350274629419878043242667614543)
-Decrypted Secret key: 1010000010 (integer: 642)
+Input: Public Key parameters: (p=12293254424529995456056407361148908763143109507734274508329448260524737144125266800879924396373184003698000873100225257723659125894915287167837699233525579, g=2, y=1499601541770446654510951837842377753681217025596591092574487257796640062244609357631381718862417806463383873750595499721393169904834664322466136621614325)
+       Private key parameters: (p=12293254424529995456056407361148908763143109507734274508329448260524737144125266800879924396373184003698000873100225257723659125894915287167837699233525579, g=2, x=12214391907657448793553231211945283294757557465126731143880363206452679697624150896317326178777200425434880551102524383340789393125044860753637461755505790)
+Decrypted Secret key: 1010000010110001 (integer: 41137)
 
 Intermediate decryption process:
---- Intermediate Decryption Process ---
-1. Subkeys Used (K2 first, then K1):
-   Subkey K2: 01000011
-   Subkey K1: 10100100
+--- Intermediate Decryption Process (Simplified AES) ---
+1. Round Subkeys Applied in Reverse Order:
+   Round 2 Key (K2): 0xFD2F (1111110100101111b)
+   Round 1 Key (K1): 0x63D2 (0110001111010010b)
+   Round 0 Key (K0): 0xA0B1 (1010000010110001b)
 
-2. Block-by-Block S-DES Decryption (showing 3 of 53 block(s)):
-   [Block 1: Cipher bits 00010101]
-     -> Initial Permutation (IP): 01001100 (L0: 0100, R0: 1100)
-     -> Round 1 (Subkey K2=01000011):
-        EP(R0): 01101001 ^ K2 = 00101010
-        S-boxes: S0->00, S1->00 | P4: 0000
-        L0 ^ P4 = 0100 | After Swap (SW): Left=1100, Right=0100
-     -> Round 2 (Subkey K1=10100100):
-        EP(R_sw): 00101000 ^ K1 = 10001100
-        S-boxes: S0->00, S1->01 | P4: 0100
-        Pre-output: 10000100
-     -> Inverse IP (IP^-1): 01000001 -> Decrypted Char: 'A' (ASCII 65)
-   [Block 2: Cipher bits 10110010]
-     -> Initial Permutation (IP): 00111001 (L0: 0011, R0: 1001)
-     -> Round 1 (Subkey K2=01000011):
-        EP(R0): 11000011 ^ K2 = 10000000
-        S-boxes: S0->00, S1->00 | P4: 0000
-        L0 ^ P4 = 0011 | After Swap (SW): Left=1001, Right=0011
-     -> Round 2 (Subkey K1=10100100):
-        EP(R_sw): 10010110 ^ K1 = 00110010
-        S-boxes: S0->10, S1->01 | P4: 0101
-        Pre-output: 11000011
-     -> Inverse IP (IP^-1): 01001110 -> Decrypted Char: 'N' (ASCII 78)
-   [Block 3: Cipher bits 00100010]
-     -> Initial Permutation (IP): 00100001 (L0: 0010, R0: 0001)
-     -> Round 1 (Subkey K2=01000011):
-        EP(R0): 10000010 ^ K2 = 11000001
-        S-boxes: S0->01, S1->10 | P4: 1010
-        L0 ^ P4 = 1000 | After Swap (SW): Left=0001, Right=1000
-     -> Round 2 (Subkey K1=10100100):
-        EP(R_sw): 01000001 ^ K1 = 11100101
-        S-boxes: S0->11, S1->01 | P4: 1101
-        Pre-output: 11001000
-     -> Inverse IP (IP^-1): 01010100 -> Decrypted Char: 'T' (ASCII 84)
-   ... (50 remaining block(s) decrypted similarly)
+2. Block-by-Block S-AES Decryption (showing 3 of 25 block(s)):
+   [Block 1: Cipher 0x7F01 (0111111100000001b)]
+     -> AddRoundKey (K2)        : 0x822E
+     -> InvShiftRows            : 0x8E22
+     -> InvSubNibbles           : 0x6D99
+     -> AddRoundKey (K1)        : 0x0E4B
+     -> InvMixColumns           : 0xF774
+     -> InvShiftRows            : 0xF477
+     -> InvSubNibbles           : 0xE1FF
+     -> AddRoundKey (K0)        : 0x414E -> Decrypted Chars: 'AN'
+   [Block 2: Cipher 0xF41F (1111010000011111b)]
+     -> AddRoundKey (K2)        : 0x0930
+     -> InvShiftRows            : 0x0039
+     -> InvSubNibbles           : 0xAAB0
+     -> AddRoundKey (K1)        : 0xC962
+     -> InvMixColumns           : 0x767D
+     -> InvShiftRows            : 0x7D76
+     -> InvSubNibbles           : 0xF4F8
+     -> AddRoundKey (K0)        : 0x5449 -> Decrypted Chars: 'TI'
+   [Block 3: Cipher 0x423B (0100001000111011b)]
+     -> AddRoundKey (K2)        : 0xBF14
+     -> InvShiftRows            : 0xB41F
+     -> InvSubNibbles           : 0x315E
+     -> AddRoundKey (K1)        : 0x528C
+     -> InvMixColumns           : 0xFBF5
+     -> InvShiftRows            : 0xF5FB
+     -> InvSubNibbles           : 0xE7E3
+     -> AddRoundKey (K0)        : 0x4752 -> Decrypted Chars: 'GR'
+   ... (22 remaining 16-bit block(s) decrypted similarly)
 
-Decrypt Message: ANTIGRAVITY SECURE PROTOCOL - RAGHAV GUPTA (20243226)
-Hash code: fd7b348520c15e0a64618da2abd975bf6dd4991bb06c20cf8bf7a72f80ab84e5210e5ed41a314fba9d471a5150d8f17aad64766dd1bf8bb39afce8e8b8a075ad
-Verification code: fd7b348520c15e0a64618da2abd975bf6dd4991bb06c20cf8bf7a72f80ab84e5210e5ed41a314fba9d471a5150d8f17aad64766dd1bf8bb39afce8e8b8a075ad
+Decrypt Message: ANTIGRAVITY SECURE PROTOCOL - RAGHAV GUPTA (44275)
+Hash code: 366db1b285510c6290071cc42e2b58e8c31d0b8324f0e5e01a900d8d7ce139c60a7bba9d9c4ad04f53aafc0381272a589d0029f3ebc89a47e48018c0f44fdab8
+Verification code: 366db1b285510c6290071cc42e2b58e8c31d0b8324f0e5e01a900d8d7ce139c60a7bba9d9c4ad04f53aafc0381272a589d0029f3ebc89a47e48018c0f44fdab8
 Signature: <valid>
 Message: <Accepted>
 ```
@@ -599,8 +547,8 @@ Message: <Accepted>
 ## 8. Submission Checklist Verification
 
 - [x] **Platform Independent & Command Line Executable (Rule 1):** Pure Python 3 standard library, executable on any OS without pip dependencies.
-- [x] **Author Details in Every Code File (Rule 2):** Name (`Raghav Gupta`) and Roll Number (`20243226`) explicitly stated in every file header and docstring.
+- [x] **Author Details in Every Code File (Rule 2):** Name (`Raghav Gupta`) and Roll Number (`44275`) explicitly stated in every file header and docstring.
 - [x] **Detailed README File (Rule 3):** Complete guide with visual architecture diagrams, mathematical proofs, and function directories.
-- [x] **ZIP File for Submission (Rule 4):** Fully bundled in `20243226_Raghav_Gupta.zip`.
+- [x] **ZIP File for Submission (Rule 4):** Fully bundled in `44275_Raghav_Gupta.zip`.
 - [x] **Sample Output Files & Screenshots (Rule 5):** Text logs (`client_output.txt`, `server_output.txt`) and high-resolution terminal window screenshots (`client_execution_screenshot.png`, `server_execution_screenshot.png`).
-- [x] **ZIP Renamed Correctly (Rule 6):** Formatted as `20243226_Raghav_Gupta.zip`.
+- [x] **ZIP Renamed Correctly (Rule 6):** Formatted as `44275_Raghav_Gupta.zip`.

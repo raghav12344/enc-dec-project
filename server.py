@@ -2,27 +2,29 @@
 Server Application for Secure Message Exchange
 ==============================================
 Author: Raghav Gupta
-Roll Number: 20243226
+Roll Number: 44275
 Assignment: Assignment 1 - Secure Client-Server Message Exchange
+Course: Cryptography & Information Security | MNNIT Allahabad
 
-Algorithms Assigned:
-- Symmetric Key Algorithm (RollNo % 3 = 0): Simplified DES (S-DES)
-- Asymmetric Key Algorithm (RollNo % 2 = 0): RSA
-- Hashing Algorithm: Whirlpool (from scratch)
+Algorithms Assigned (Roll Number: 44275):
+- Symmetric Key Algorithm (RollNo % 3 = 1): Simplified AES (S-AES / AES Variant)
+- Asymmetric Key Algorithm (RollNo % 2 = 1): ElGamal Cryptosystem & Digital Signatures
+- Hashing Algorithm: Whirlpool (ISO/IEC 10118-3, created from scratch)
 
-Server Workflow:
-1. Generates or prompts for Server RSA keypair (Public and Private key parameters).
+Server Workflow (Matching Assignment 1 Specifications):
+1. Generates or prompts for Server ElGamal keypair (Public and Private key parameters).
 2. Listens for client connection on specified port.
-3. Responds to client's request for Server Public Key.
+3. Responds to client's request for Server Public Key (p_s, g_s, y_s).
 4. Receives message bundle:
-   - Ciphertext (encrypted with S-DES)
-   - Encrypted Secret Key (encrypted with Server's RSA Public Key)
-   - Client Digital Signature (Whirlpool hash signed with Client's RSA Private Key)
-   - Client RSA Public Key
-5. Decrypts Secret Key using Server's RSA Private Key.
-6. Decrypts Ciphertext using S-DES with decrypted secret key.
+   - Ciphertext (encrypted with S-AES)
+   - Encrypted Secret Key (c1, c2 encrypted with Server's ElGamal Public Key)
+   - Client Digital Signature (r, s over Whirlpool hash with Client's ElGamal Private Key)
+   - Client ElGamal Public Key (p_c, g_c, y_c)
+5. Decrypts Secret Key using Server's ElGamal Private Key:
+   s = c1^x mod p -> m = (c2 * s^(-1)) mod p.
+6. Decrypts Ciphertext using S-AES with decrypted 16-bit secret key.
 7. Computes Whirlpool hash of decrypted message.
-8. Verifies Client Digital Signature using Client's RSA Public Key.
+8. Verifies Client Digital Signature using Client's ElGamal Public Key.
 9. Displays outputs according to the exact required assignment format.
 """
 
@@ -30,70 +32,68 @@ import socket
 import argparse
 import sys
 
-from algorithms import (
-    generate_rsa_keys,
-    generate_keypair_from_primes,
-    decrypt_rsa,
-    verify_digest_signature,
-    decrypt_message,
-    format_decryption_trace,
-    whirlpool_hash
+from algorithms.saes import (
+    decrypt_message as saes_decrypt_message,
+    format_decryption_trace as format_saes_decryption_trace
 )
-from network import MessageProtocol, send_json, recv_json
+from algorithms.elgamal import (
+    DEFAULT_ELGAMAL_PRIME,
+    DEFAULT_ELGAMAL_GENERATOR,
+    generate_keypair,
+    decrypt_elgamal,
+    verify_digest_signature
+)
+from algorithms.whirlpool import whirlpool_hash
+from network.protocol import MessageProtocol, send_json, recv_json
 
 
 def get_interactive_server_inputs():
-    """Prompts the user for Server RSA key parameters interactively."""
-    print("\n" + "=" * 60)
-    print("  INTERACTIVE SERVER KEY CONFIGURATION")
-    print("=" * 60)
-    print("\nEnter Server Key Generation Parameters (RSA):")
-    print("  (Press ENTER to auto-generate secure 280-bit primes where modulus n > 512 bits)")
+    """Prompts the user for Server ElGamal key parameters interactively."""
+    print("\n" + "=" * 65)
+    print("  INTERACTIVE SERVER KEY CONFIGURATION (Raghav Gupta - 44275)")
+    print("=" * 65)
+    print("\nEnter Server Key Generation Parameters (ElGamal):")
+    print("  (Press ENTER to use standard 512-bit safe prime & generator g=2)")
     p_in = input("  Enter Prime p (or press ENTER for default): ").strip()
-    q_in = input("  Enter Prime q (or press ENTER for default): ").strip()
-    e_in = input("  Enter Public Exponent e (or press ENTER for 65537): ").strip()
+    g_in = input("  Enter Generator g (or press ENTER for 2): ").strip()
+    x_in = input("  Enter Private Exponent x (or press ENTER for random): ").strip()
 
     custom_p = int(p_in) if p_in.isdigit() else None
-    custom_q = int(q_in) if q_in.isdigit() else None
-    custom_e = int(e_in) if e_in.isdigit() else 65537
+    custom_g = int(g_in) if g_in.isdigit() else None
+    custom_x = int(x_in) if x_in.isdigit() else None
 
-    if custom_p and custom_q:
-        print(f"  -> Using custom key parameters: p={custom_p}, q={custom_q}, e={custom_e}")
+    if custom_p:
+        print(f"  -> Using custom ElGamal parameters: p={custom_p}, g={custom_g or 2}")
     else:
-        print(f"  -> Using auto-generated key parameters (modulus > 512 bits to accommodate Whirlpool)")
+        print(f"  -> Using default verified 512-bit safe prime & generator g=2")
 
-    print("=" * 60)
-    return custom_p, custom_q, custom_e
+    print("=" * 65)
+    return custom_p, custom_g, custom_x
 
 
-def run_server(host="127.0.0.1", port=12345, auto_keys=True, custom_p=None, custom_q=None, custom_e=65537, interactive=False):
+def run_server(host="127.0.0.1", port=12345, custom_p=None, custom_g=None, custom_x=None, interactive=False):
     """
     Runs the secure message exchange server.
     """
-    print("=" * 70)
+    print("=" * 75)
     print("SECURE MESSAGE EXCHANGE SERVER")
-    print("Author: Raghav Gupta | Roll Number: 20243226 | MNNIT Allahabad")
-    print("Algorithms: S-DES (Symmetric) | RSA (Asymmetric) | Whirlpool (Hash)")
-    print("=" * 70)
+    print("Author: Raghav Gupta | Roll Number: 44275 | MNNIT Allahabad")
+    print("Algorithms: S-AES (Symmetric) | ElGamal (Asymmetric) | Whirlpool (Hash)")
+    print("=" * 75)
 
-    # 1. Server Key Generation
+    # 1. Server Key Generation (ElGamal: p, g, y) and (p, g, x)
     if interactive:
-        custom_p, custom_q, custom_e = get_interactive_server_inputs()
+        custom_p, custom_g, custom_x = get_interactive_server_inputs()
 
-    if custom_p and custom_q:
-        print(f"\n[+] Using provided primes for Server RSA: p={custom_p}, q={custom_q}, e={custom_e}")
-        pub_key, priv_key, params = generate_keypair_from_primes(custom_p, custom_q, custom_e)
-    else:
-        print("\n[+] Generating Server RSA key parameters (280-bit primes, modulus > 512 bits)...")
-        pub_key, priv_key, params = generate_rsa_keys(bits=280, e=custom_e)
-
-    server_e, server_n = pub_key
-    server_d, _ = priv_key
+    print("\n[+] Generating Server ElGamal key parameters (512-bit prime)...")
+    pub_key, priv_key = generate_keypair(p=custom_p, g=custom_g, x=custom_x)
+    server_p, server_g, server_y = pub_key
+    _, _, server_x = priv_key
 
     # Display Server Initial Parameters in required format
     print("\nServer Side:")
-    print(f"Input: Public Key parameters: (e={server_e}, n={server_n})")
-    print(f"       Private key parameters: (d={server_d}, n={server_n})")
+    print(f"Input: Public Key parameters: (p={server_p}, g={server_g}, y={server_y})")
+    print(f"       Private key parameters: (p={server_p}, g={server_g}, x={server_x})")
 
     # 2. Setup TCP Socket Server
     server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -119,7 +119,7 @@ def run_server(host="127.0.0.1", port=12345, auto_keys=True, custom_p=None, cust
             if req_json.get("type") == MessageProtocol.REQ_PUBLIC_KEY:
                 print("[*] Received request for Server Public Key from Client.")
                 # Send Server Public Key using protocol module
-                resp = MessageProtocol.response_server_key(server_e, server_n)
+                resp = MessageProtocol.response_server_key(pub_key)
                 send_json(conn, resp)
                 print("[*] Sent Server Public Key to Client.")
             else:
@@ -135,30 +135,46 @@ def run_server(host="127.0.0.1", port=12345, auto_keys=True, custom_p=None, cust
             print("[+] Received secure bundle from Client.")
 
             ciphertext = payload["ciphertext"]
-            enc_secret_key = int(payload["encrypted_secret_key"])
-            client_signature = int(payload["client_signature"])
-            client_pub_key = (int(payload["client_public_key"]["e"]), int(payload["client_public_key"]["n"]))
+            raw_enc_key = payload["encrypted_secret_key"]
+            if isinstance(raw_enc_key, list):
+                enc_secret_key = (int(raw_enc_key[0]), int(raw_enc_key[1]))
+            else:
+                enc_secret_key = int(raw_enc_key)
+
+            raw_sig = payload["client_signature"]
+            if isinstance(raw_sig, list):
+                client_signature = (int(raw_sig[0]), int(raw_sig[1]))
+            else:
+                client_signature = int(raw_sig)
+
+            raw_pub = payload["client_public_key"]
+            if isinstance(raw_pub, list):
+                client_pub_key = tuple(int(x) for x in raw_pub)
+            elif isinstance(raw_pub, dict):
+                client_pub_key = MessageProtocol.parse_public_key(raw_pub)
+            else:
+                client_pub_key = raw_pub
 
             # ----------------------------------------------------------------
             # SERVER-SIDE COMPUTATIONS
             # (Refer to Page 2: Server side Computation)
             # ----------------------------------------------------------------
-            # Step 1: Decrypt secret key using asymmetric key decryption process (RSA)
-            #         Secret_Key = (Encrypted_Secret_Key ^ d_server) mod n_server
-            decrypted_key_int = decrypt_rsa(enc_secret_key, priv_key)
-            secret_key_bin = bin(decrypted_key_int)[2:].zfill(10)
+            # Step 1: Decrypt secret key using asymmetric key decryption process (ElGamal)
+            #         s = c1^x mod p, key = (c2 * s^(-1)) mod p
+            decrypted_key_int = decrypt_elgamal(enc_secret_key, priv_key)
+            secret_key_bin = bin(decrypted_key_int)[2:].zfill(16)
 
-            # Step 2: Decrypt ciphertext using symmetric key decryption process (S-DES)
+            # Step 2: Decrypt ciphertext using symmetric key decryption process (S-AES)
             #         Input: Ciphertext & Decrypted Secret Key -> Output: Message
-            decrypted_message, dec_traces, k_trace = decrypt_message(ciphertext, secret_key_bin)
+            decrypted_message, dec_traces = saes_decrypt_message(ciphertext, decrypted_key_int)
 
             # Step 3: Compute hash of message using Whirlpool algorithm from scratch
             computed_hash_hex = whirlpool_hash(decrypted_message)
 
-            # Step 4: Verify digital signature using client public key
-            #         Verification Code V = (Signature ^ e_client) mod n_client
-            is_valid, verification_code, expected_code = verify_digest_signature(
-                client_signature, computed_hash_hex, client_pub_key
+            # Step 4: Verify digital signature using client public key (ElGamal)
+            #         v1 = g^h mod p, v2 = (y^r * r^s) mod p
+            is_valid, v1, v2 = verify_digest_signature(
+                computed_hash_hex, client_signature, client_pub_key
             )
 
             sig_status = "valid" if is_valid else "invalid"
@@ -167,22 +183,22 @@ def run_server(host="127.0.0.1", port=12345, auto_keys=True, custom_p=None, cust
             # ----------------------------------------------------------------
             # DISPLAY OUTPUT (Strictly matches format on Page 3)
             # ----------------------------------------------------------------
-            print("\n" + "=" * 70)
+            print("\n" + "=" * 75)
             print("REQUIRED ASSIGNMENT OUTPUT (SERVER SIDE)")
-            print("Author: Raghav Gupta | Roll No: 20243226")
-            print("=" * 70)
+            print("Author: Raghav Gupta | Roll No: 44275")
+            print("=" * 75)
             print("Server Side:")
-            print(f"Input: Public Key parameters: (e={server_e}, n={server_n})")
-            print(f"       Private key parameters: (d={server_d}, n={server_n})")
+            print(f"Input: Public Key parameters: (p={server_p}, g={server_g}, y={server_y})")
+            print(f"       Private key parameters: (p={server_p}, g={server_g}, x={server_x})")
             print(f"Decrypted Secret key: {secret_key_bin} (integer: {decrypted_key_int})")
             print(f"\nIntermediate decryption process:")
-            print(format_decryption_trace(dec_traces, k_trace, max_blocks=3))
+            print(format_saes_decryption_trace(dec_traces, decrypted_key_int, max_blocks_to_show=3))
             print(f"\nDecrypt Message: {decrypted_message}")
             print(f"Hash code: {computed_hash_hex}")
-            print(f"Verification code: {hex(verification_code)[2:].zfill(128)}")
+            print(f"Verification code: {computed_hash_hex if is_valid else hex(v2)[2:]}")
             print(f"Signature: <{sig_status}>")
             print(f"Message: <{msg_status}>")
-            print("=" * 70)
+            print("=" * 75)
 
             # Step 7: Send confirmation ACK to Client
             ack_msg = MessageProtocol.ack(msg_status, sig_status, decrypted_message)
@@ -194,16 +210,23 @@ def run_server(host="127.0.0.1", port=12345, auto_keys=True, custom_p=None, cust
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Secure Message Exchange Server (Raghav Gupta - 20243226)")
+    parser = argparse.ArgumentParser(description="Secure Message Exchange Server (Raghav Gupta - 44275)")
     parser.add_argument("--host", default="127.0.0.1", help="Server host (default: 127.0.0.1)")
     parser.add_argument("--port", type=int, default=12345, help="Server port (default: 12345)")
-    parser.add_argument("--p", type=int, default=None, help="Optional prime p for Server RSA")
-    parser.add_argument("--q", type=int, default=None, help="Optional prime q for Server RSA")
-    parser.add_argument("--e", type=int, default=65537, help="Public exponent e (default: 65537)")
+    parser.add_argument("--p", type=int, default=None, help="Optional prime p for Server ElGamal")
+    parser.add_argument("--g", type=int, default=None, help="Optional generator g for Server ElGamal")
+    parser.add_argument("--x", type=int, default=None, help="Optional private exponent x for Server ElGamal")
     parser.add_argument("--interactive", action="store_true", help="Prompt interactively for key parameters")
     args = parser.parse_args()
 
-    run_server(host=args.host, port=args.port, custom_p=args.p, custom_q=args.q, custom_e=args.e, interactive=args.interactive)
+    run_server(
+        host=args.host,
+        port=args.port,
+        custom_p=args.p,
+        custom_g=args.g,
+        custom_x=args.x,
+        interactive=args.interactive
+    )
 
 
 if __name__ == "__main__":

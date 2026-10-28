@@ -2,8 +2,9 @@
 Demonstration Runner and Terminal Screenshot Generator
 ======================================================
 Author: Raghav Gupta
-Roll Number: 20243226
+Roll Number: 44275
 Assignment: Assignment 1 - Secure Client-Server Message Exchange
+Course: Cryptography & Information Security | MNNIT Allahabad
 
 This script runs the Server and Client with a sample demonstration message,
 captures raw stdout to 'server_output.txt' and 'client_output.txt',
@@ -23,8 +24,8 @@ def capture_execution():
     client_cmd = [
         "py", "client.py",
         "--port", "12345",
-        "--message", "ANTIGRAVITY SECURE PROTOCOL - RAGHAV GUPTA (20243226)",
-        "--key", "1010000010"
+        "--message", "ANTIGRAVITY SECURE PROTOCOL - RAGHAV GUPTA (44275)",
+        "--key", "1010000010110001"
     ]
 
     print("[*] Starting Server process...")
@@ -96,7 +97,6 @@ def render_terminal_screenshot(text, filename, title="Windows PowerShell"):
     draw.text((15, 10), title, fill=(204, 204, 204), font=font)
 
     # Window Controls (Minimize, Maximize, Close)
-    # Close button red box
     draw.rectangle([(width - 45, 0), (width, title_bar_height)], fill=(31, 31, 31))
     draw.text((width - 32, 10), "X", fill=(180, 180, 180), font=font)
     draw.text((width - 65, 8), "[]", fill=(180, 180, 180), font=font)
@@ -127,5 +127,5 @@ def render_terminal_screenshot(text, filename, title="Windows PowerShell"):
 
 if __name__ == "__main__":
     c_out, s_out = capture_execution()
-    render_terminal_screenshot(s_out, "server_execution_screenshot.png", "Server Terminal - Raghav Gupta (20243226)")
-    render_terminal_screenshot(c_out, "client_execution_screenshot.png", "Client Terminal - Raghav Gupta (20243226)")
+    render_terminal_screenshot(s_out, "server_execution_screenshot.png", "Server Terminal - Raghav Gupta (44275)")
+    render_terminal_screenshot(c_out, "client_execution_screenshot.png", "Client Terminal - Raghav Gupta (44275)")

@@ -1,80 +1,75 @@
-======================================================================
+===========================================================================
 SECURE MESSAGE EXCHANGE CLIENT
-Author: Raghav Gupta | Roll Number: 20243226 | MNNIT Allahabad
-Algorithms: S-DES (Symmetric) | RSA (Asymmetric) | Whirlpool (Hash)
-======================================================================
+Author: Raghav Gupta | Roll Number: 44275 | MNNIT Allahabad
+Algorithms: S-AES (Symmetric) | ElGamal (Asymmetric) | Whirlpool (Hash)
+===========================================================================
 
-[+] Generating Client RSA key parameters (280-bit primes, modulus > 512 bits)...
+[+] Generating Client ElGamal key parameters (512-bit prime)...
 
 [*] Connecting to Server at 127.0.0.1:12345...
 [+] Connected to Server successfully.
 [*] Sent request for Server Public Key.
-[+] Received Server Public Key: (e=65537, n=1854842169767150327811618948741157686633568364123493633608832785574016578837619341013441145594418235878125402813649315261029787588825087420234971011032514127643623850973)
+[+] Received Server Public Key: (p=12293254424529995456056407361148908763143109507734274508329448260524737144125266800879924396373184003698000873100225257723659125894915287167837699233525579, g=2, y=412416287557368118713391724844448564646911359438337938689828504946138044941920982087768872602256511346451378640374487932033463027378867168133504978316102)
 
-======================================================================
+===========================================================================
 REQUIRED ASSIGNMENT OUTPUT (CLIENT SIDE)
-Author: Raghav Gupta | Roll No: 20243226
-======================================================================
+Author: Raghav Gupta | Roll No: 44275
+===========================================================================
 Client Side:
-Input: Message: <ANTIGRAVITY SECURE PROTOCOL - RAGHAV GUPTA (20243226)>
-Secret Key: <1010000010>
-Public Key parameters: (e=65537, n=2014427245774015405317659613000363123262414076671645479531781457863755446185443274040205696484163885097194044995489256299019104823436449673604942453088677832536113906363)
-Private key parameters: (d=1480613400505581916690597121598905834071600562632912137403999463284817734146402833672255454859791558908796012352732879616889895394548914092140664591890371062084403866273, n=2014427245774015405317659613000363123262414076671645479531781457863755446185443274040205696484163885097194044995489256299019104823436449673604942453088677832536113906363)
-Encrypted Secret Key: <1075154000302837562576775584649833382159846143152894253645778756249407299946754127098218865543355396218964406823810773915946948940562835546269692525892222936170194372931>
+Input: Message: <ANTIGRAVITY SECURE PROTOCOL - RAGHAV GUPTA (44275)>
+Secret Key: <1010000010110001>
+Public Key parameters: (p=12293254424529995456056407361148908763143109507734274508329448260524737144125266800879924396373184003698000873100225257723659125894915287167837699233525579, g=2, y=7295500628837490298030286527972169113448888187167852456545430689001917695686262931430726778060135184427273774455297300698682507365117326050742238098597414)
+Private key parameters: (p=12293254424529995456056407361148908763143109507734274508329448260524737144125266800879924396373184003698000873100225257723659125894915287167837699233525579, g=2, x=638902994112781968758289645326821977539660086214623481998237292746654849951192590831690777252543033127512871314737296253308233708699199320361848075071083)
+Encrypted Secret Key: <(8080216455171421962857926388846133413611135619319193051252631646640840518375060542592038739404554109202410722126980610492478793063179751547530089001913425, 3651211898994829049942992917701886934207041899935480685927722636999664737426168000185865087059418007709198064666519896771914967913104062496913200612615594)>
 
 Intermediate encryption process:
---- Intermediate Encryption Process ---
-1. Key Generation (10-bit key: 1010000010):
-   P10 Permutation: 1000001100 -> Left: 10000, Right: 01100
-   Left Shift 1 (LS-1): Left: 00001, Right: 11000
-   Subkey K1 (P8 applied): 10100100
-   Left Shift 2 (LS-2): Left: 00100, Right: 00011
-   Subkey K2 (P8 applied): 01000011
+--- Intermediate Encryption Process (Simplified AES) ---
+1. Key Schedule Expansion (16-bit master key: 0xA0B1 = 1010000010110001b):
+   Words w0, w1 : w0 = 0xA0 (10100000b), w1 = 0xB1 (10110001b)
+   Words w2, w3 : w2 = 0x63 (01100011b), w3 = 0xD2 (11010010b)
+   Words w4, w5 : w4 = 0xFD (11111101b), w5 = 0x2F (00101111b)
+   -> Round 0 Key (K0): 0xA0B1 (1010000010110001b)
+   -> Round 1 Key (K1): 0x63D2 (0110001111010010b)
+   -> Round 2 Key (K2): 0xFD2F (1111110100101111b)
 
-2. Block-by-Block S-DES Encryption (showing 3 of 53 block(s)):
-   [Block 1: Char 'A' (ASCII 65 = 01000001)]
-     -> Initial Permutation (IP): 10000100 (L0: 1000, R0: 0100)
-     -> Round 1 (Subkey K1=10100100):
-        EP(R0): 00101000 ^ K1 = 10001100
-        S-boxes: S0->00, S1->01 | P4: 0100
-        L0 ^ P4 = 1100 | After Swap (SW): Left=0100, Right=1100
-     -> Round 2 (Subkey K2=01000011):
-        EP(R_sw): 01101001 ^ K2 = 00101010
-        S-boxes: S0->00, S1->00 | P4: 0000
-        Pre-output: 01001100
-     -> Inverse IP (IP^-1): 00010101
-   [Block 2: Char 'N' (ASCII 78 = 01001110)]
-     -> Initial Permutation (IP): 11000011 (L0: 1100, R0: 0011)
-     -> Round 1 (Subkey K1=10100100):
-        EP(R0): 10010110 ^ K1 = 00110010
-        S-boxes: S0->10, S1->01 | P4: 0101
-        L0 ^ P4 = 1001 | After Swap (SW): Left=0011, Right=1001
-     -> Round 2 (Subkey K2=01000011):
-        EP(R_sw): 11000011 ^ K2 = 10000000
-        S-boxes: S0->00, S1->00 | P4: 0000
-        Pre-output: 00111001
-     -> Inverse IP (IP^-1): 10110010
-   [Block 3: Char 'T' (ASCII 84 = 01010100)]
-     -> Initial Permutation (IP): 11001000 (L0: 1100, R0: 1000)
-     -> Round 1 (Subkey K1=10100100):
-        EP(R0): 01000001 ^ K1 = 11100101
-        S-boxes: S0->11, S1->01 | P4: 1101
-        L0 ^ P4 = 0001 | After Swap (SW): Left=1000, Right=0001
-     -> Round 2 (Subkey K2=01000011):
-        EP(R_sw): 10000010 ^ K2 = 11000001
-        S-boxes: S0->01, S1->10 | P4: 1010
-        Pre-output: 00100001
-     -> Inverse IP (IP^-1): 00100010
-   ... (50 remaining block(s) encrypted similarly)
+2. Block-by-Block S-AES Encryption (showing 3 of 25 block(s)):
+   [Block 1: Chars 'AN' (16-bit: 0x414E = 0100000101001110b)]
+     -> Round 0 AddRoundKey (K0): 0xE1FF
+     -> Round 1 SubNibbles      : 0xF477
+     -> Round 1 ShiftRows       : 0xF774
+     -> Round 1 MixColumns      : 0x0E4B
+     -> Round 1 AddRoundKey (K1): 0x6D99
+     -> Round 2 SubNibbles      : 0x8E22
+     -> Round 2 ShiftRows       : 0x822E
+     -> Round 2 AddRoundKey (K2): 0x7F01 (Cipher block: 0x7F01)
+   [Block 2: Chars 'TI' (16-bit: 0x5449 = 0101010001001001b)]
+     -> Round 0 AddRoundKey (K0): 0xF4F8
+     -> Round 1 SubNibbles      : 0x7D76
+     -> Round 1 ShiftRows       : 0x767D
+     -> Round 1 MixColumns      : 0xC962
+     -> Round 1 AddRoundKey (K1): 0xAAB0
+     -> Round 2 SubNibbles      : 0x0039
+     -> Round 2 ShiftRows       : 0x0930
+     -> Round 2 AddRoundKey (K2): 0xF41F (Cipher block: 0xF41F)
+   [Block 3: Chars 'GR' (16-bit: 0x4752 = 0100011101010010b)]
+     -> Round 0 AddRoundKey (K0): 0xE7E3
+     -> Round 1 SubNibbles      : 0xF5FB
+     -> Round 1 ShiftRows       : 0xFBF5
+     -> Round 1 MixColumns      : 0x528C
+     -> Round 1 AddRoundKey (K1): 0x315E
+     -> Round 2 SubNibbles      : 0xB41F
+     -> Round 2 ShiftRows       : 0xBF14
+     -> Round 2 AddRoundKey (K2): 0x423B (Cipher block: 0x423B)
+   ... (22 remaining 16-bit block(s) encrypted similarly)
 
-Cipher text: <15b222af019f153aaf22aa624f5044c19f5062a39f4722474447a56236629f1501e0153a6201c1a3221562dc231f23ba732323a293>
-Hash code: <fd7b348520c15e0a64618da2abd975bf6dd4991bb06c20cf8bf7a72f80ab84e5210e5ed41a314fba9d471a5150d8f17aad64766dd1bf8bb39afce8e8b8a075ad>
-Digital Signature: <70350673977033209156100207000556432582443378446614836810570958839054700180822184326423643365186759488031864057073158986872357052743466973688259145082716681970658743329>
-======================================================================
+Cipher text: <7f01f41f423b0a681f2c5b7965bb944a68fb47b398f4941465bef520408348febbc90a6870465da9441e96cf602f56348e11>
+Hash code: <366db1b285510c6290071cc42e2b58e8c31d0b8324f0e5e01a900d8d7ce139c60a7bba9d9c4ad04f53aafc0381272a589d0029f3ebc89a47e48018c0f44fdab8>
+Digital Signature: <(3797176017665366419054104217310026022834976004610765554765763681701817372394298276594590242934597545334910112780924351071566704748743394761782242988290406, 3250578484536347021385834074570623006467878925515014800702326830196294873623609813367225112970869937734172359395675864688774617642458814414051038783468250)>
+===========================================================================
 
 [+] Sent payload bundle to Server.
 [+] Server Response received:
     Status:    Accepted
     Signature: valid
-    Message:   'ANTIGRAVITY SECURE PROTOCOL - RAGHAV GUPTA (20243226)'
+    Message:   'ANTIGRAVITY SECURE PROTOCOL - RAGHAV GUPTA (44275)'
 [*] Connection closed.

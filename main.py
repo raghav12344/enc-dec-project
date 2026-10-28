@@ -2,8 +2,9 @@
 Master Interactive Control Panel
 ================================
 Author: Raghav Gupta
-Roll Number: 20243226
+Roll Number: 44275
 Assignment: Assignment 1 - Secure Client-Server Message Exchange
+Course: Cryptography & Information Security | MNNIT Allahabad
 
 This master script provides a user-friendly CLI menu for executing,
 testing, debugging, and packaging the complete Cryptography assignment.
@@ -21,11 +22,11 @@ def clear_screen():
 
 
 def print_banner():
-    print("=" * 72)
+    print("=" * 75)
     print("  SECURE MESSAGE PROTOCOL - CRYPTOGRAPHY ASSIGNMENT 1")
-    print("  Author: Raghav Gupta | Roll Number: 20243226 | MNNIT Allahabad")
-    print("  Assigned: S-DES (Symmetric) | RSA (Asymmetric) | Whirlpool (Hash)")
-    print("=" * 72)
+    print("  Author: Raghav Gupta | Roll Number: 44275 | MNNIT Allahabad")
+    print("  Assigned: S-AES (Symmetric) | ElGamal (Asymmetric) | Whirlpool (Hash)")
+    print("=" * 75)
 
 
 def run_side_by_side_demo():
@@ -33,7 +34,6 @@ def run_side_by_side_demo():
     print("\n[+] Launching Server and Client in separate terminal windows...")
 
     if os.name == "nt":
-        # Windows: Use start powershell
         server_cmd = 'start powershell -NoExit -Command "py server.py --port 12345"'
         client_cmd = 'start powershell -NoExit -Command "py client.py --port 12345 --interactive"'
 
@@ -78,17 +78,17 @@ def run_batch_demo():
 
 def package_zip():
     """Packages all required submission files into the designated ZIP."""
-    zip_name = "20243226_Raghav_Gupta.zip"
+    zip_name = "44275_Raghav_Gupta.zip"
     files_to_zip = [
         "algorithms/__init__.py",
-        "algorithms/sdes.py",
-        "algorithms/rsa.py",
+        "algorithms/saes.py",
+        "algorithms/elgamal.py",
         "algorithms/whirlpool.py",
         "network/__init__.py",
         "network/protocol.py",
         "whirlpool.py",
-        "sdes.py",
-        "rsa.py",
+        "saes.py",
+        "elgamal.py",
         "server.py",
         "client.py",
         "test_suite.py",
@@ -121,14 +121,14 @@ def main():
         clear_screen()
         print_banner()
         print("\nPlease choose an option:")
-        print("  [1] 🚀 Launch Live Demo (Spawns Server & Client in Side-by-Side Windows)")
-        print("  [2] 🖥️ Start Server (Current Terminal)")
-        print("  [3] 📱 Start Client (Interactive / Send Custom Message)")
-        print("  [4] 🧪 Run Automated Unit & Integration Tests (test_suite.py)")
-        print("  [5] 📸 Run Batch Demo & Generate Output Logs + Screenshots")
-        print("  [6] 📦 Package Submission ZIP ('20243226_Raghav_Gupta.zip')")
-        print("  [0] ❌ Exit")
-        print("=" * 72)
+        print("  [1] Launch Live Demo (Spawns Server & Client in Side-by-Side Windows)")
+        print("  [2] Start Server (Current Terminal)")
+        print("  [3] Start Client (Interactive / Send Custom Message)")
+        print("  [4] Run Automated Unit & Integration Tests (test_suite.py)")
+        print("  [5] Run Batch Demo & Generate Output Logs + Screenshots")
+        print("  [6] Package Submission ZIP ('44275_Raghav_Gupta.zip')")
+        print("  [0] Exit")
+        print("=" * 75)
 
         choice = input("Enter choice [0-6]: ").strip()
 

@@ -1,78 +1,73 @@
-======================================================================
+===========================================================================
 SECURE MESSAGE EXCHANGE SERVER
-Author: Raghav Gupta | Roll Number: 20243226 | MNNIT Allahabad
-Algorithms: S-DES (Symmetric) | RSA (Asymmetric) | Whirlpool (Hash)
-======================================================================
+Author: Raghav Gupta | Roll Number: 44275 | MNNIT Allahabad
+Algorithms: S-AES (Symmetric) | ElGamal (Asymmetric) | Whirlpool (Hash)
+===========================================================================
 
-[+] Generating Server RSA key parameters (280-bit primes, modulus > 512 bits)...
+[+] Generating Server ElGamal key parameters (512-bit prime)...
 
 Server Side:
-Input: Public Key parameters: (e=65537, n=1854842169767150327811618948741157686633568364123493633608832785574016578837619341013441145594418235878125402813649315261029787588825087420234971011032514127643623850973)
-       Private key parameters: (d=1097135308467332689284181585180142174990467638665902172922874146402440646942037532298989042598551612608891647945064249446538763636558622801357379387969280139989905682733, n=1854842169767150327811618948741157686633568364123493633608832785574016578837619341013441145594418235878125402813649315261029787588825087420234971011032514127643623850973)
+Input: Public Key parameters: (p=12293254424529995456056407361148908763143109507734274508329448260524737144125266800879924396373184003698000873100225257723659125894915287167837699233525579, g=2, y=412416287557368118713391724844448564646911359438337938689828504946138044941920982087768872602256511346451378640374487932033463027378867168133504978316102)
+       Private key parameters: (p=12293254424529995456056407361148908763143109507734274508329448260524737144125266800879924396373184003698000873100225257723659125894915287167837699233525579, g=2, x=5757368150690481041436269010907838700306028264144144858496705947994984107269086532216898674639844313462978335989416671107516650532153823226695539173202735)
 
 [*] Server listening on 127.0.0.1:12345...
 [*] Waiting for Client connection...
-[+] Client connected from 127.0.0.1:62595
+[+] Client connected from 127.0.0.1:63895
 [*] Received request for Server Public Key from Client.
 [*] Sent Server Public Key to Client.
 [+] Received secure bundle from Client.
 
-======================================================================
+===========================================================================
 REQUIRED ASSIGNMENT OUTPUT (SERVER SIDE)
-Author: Raghav Gupta | Roll No: 20243226
-======================================================================
+Author: Raghav Gupta | Roll No: 44275
+===========================================================================
 Server Side:
-Input: Public Key parameters: (e=65537, n=1854842169767150327811618948741157686633568364123493633608832785574016578837619341013441145594418235878125402813649315261029787588825087420234971011032514127643623850973)
-       Private key parameters: (d=1097135308467332689284181585180142174990467638665902172922874146402440646942037532298989042598551612608891647945064249446538763636558622801357379387969280139989905682733, n=1854842169767150327811618948741157686633568364123493633608832785574016578837619341013441145594418235878125402813649315261029787588825087420234971011032514127643623850973)
-Decrypted Secret key: 1010000010 (integer: 642)
+Input: Public Key parameters: (p=12293254424529995456056407361148908763143109507734274508329448260524737144125266800879924396373184003698000873100225257723659125894915287167837699233525579, g=2, y=412416287557368118713391724844448564646911359438337938689828504946138044941920982087768872602256511346451378640374487932033463027378867168133504978316102)
+       Private key parameters: (p=12293254424529995456056407361148908763143109507734274508329448260524737144125266800879924396373184003698000873100225257723659125894915287167837699233525579, g=2, x=5757368150690481041436269010907838700306028264144144858496705947994984107269086532216898674639844313462978335989416671107516650532153823226695539173202735)
+Decrypted Secret key: 1010000010110001 (integer: 41137)
 
 Intermediate decryption process:
---- Intermediate Decryption Process ---
-1. Subkeys Used (K2 first, then K1):
-   Subkey K2: 01000011
-   Subkey K1: 10100100
+--- Intermediate Decryption Process (Simplified AES) ---
+1. Round Subkeys Applied in Reverse Order:
+   Round 2 Key (K2): 0xFD2F (1111110100101111b)
+   Round 1 Key (K1): 0x63D2 (0110001111010010b)
+   Round 0 Key (K0): 0xA0B1 (1010000010110001b)
 
-2. Block-by-Block S-DES Decryption (showing 3 of 53 block(s)):
-   [Block 1: Cipher bits 00010101]
-     -> Initial Permutation (IP): 01001100 (L0: 0100, R0: 1100)
-     -> Round 1 (Subkey K2=01000011):
-        EP(R0): 01101001 ^ K2 = 00101010
-        S-boxes: S0->00, S1->00 | P4: 0000
-        L0 ^ P4 = 0100 | After Swap (SW): Left=1100, Right=0100
-     -> Round 2 (Subkey K1=10100100):
-        EP(R_sw): 00101000 ^ K1 = 10001100
-        S-boxes: S0->00, S1->01 | P4: 0100
-        Pre-output: 10000100
-     -> Inverse IP (IP^-1): 01000001 -> Decrypted Char: 'A' (ASCII 65)
-   [Block 2: Cipher bits 10110010]
-     -> Initial Permutation (IP): 00111001 (L0: 0011, R0: 1001)
-     -> Round 1 (Subkey K2=01000011):
-        EP(R0): 11000011 ^ K2 = 10000000
-        S-boxes: S0->00, S1->00 | P4: 0000
-        L0 ^ P4 = 0011 | After Swap (SW): Left=1001, Right=0011
-     -> Round 2 (Subkey K1=10100100):
-        EP(R_sw): 10010110 ^ K1 = 00110010
-        S-boxes: S0->10, S1->01 | P4: 0101
-        Pre-output: 11000011
-     -> Inverse IP (IP^-1): 01001110 -> Decrypted Char: 'N' (ASCII 78)
-   [Block 3: Cipher bits 00100010]
-     -> Initial Permutation (IP): 00100001 (L0: 0010, R0: 0001)
-     -> Round 1 (Subkey K2=01000011):
-        EP(R0): 10000010 ^ K2 = 11000001
-        S-boxes: S0->01, S1->10 | P4: 1010
-        L0 ^ P4 = 1000 | After Swap (SW): Left=0001, Right=1000
-     -> Round 2 (Subkey K1=10100100):
-        EP(R_sw): 01000001 ^ K1 = 11100101
-        S-boxes: S0->11, S1->01 | P4: 1101
-        Pre-output: 11001000
-     -> Inverse IP (IP^-1): 01010100 -> Decrypted Char: 'T' (ASCII 84)
-   ... (50 remaining block(s) decrypted similarly)
+2. Block-by-Block S-AES Decryption (showing 3 of 25 block(s)):
+   [Block 1: Cipher 0x7F01 (0111111100000001b)]
+     -> AddRoundKey (K2)        : 0x822E
+     -> InvShiftRows            : 0x8E22
+     -> InvSubNibbles           : 0x6D99
+     -> AddRoundKey (K1)        : 0x0E4B
+     -> InvMixColumns           : 0xF774
+     -> InvShiftRows            : 0xF477
+     -> InvSubNibbles           : 0xE1FF
+     -> AddRoundKey (K0)        : 0x414E -> Decrypted Chars: 'AN'
+   [Block 2: Cipher 0xF41F (1111010000011111b)]
+     -> AddRoundKey (K2)        : 0x0930
+     -> InvShiftRows            : 0x0039
+     -> InvSubNibbles           : 0xAAB0
+     -> AddRoundKey (K1)        : 0xC962
+     -> InvMixColumns           : 0x767D
+     -> InvShiftRows            : 0x7D76
+     -> InvSubNibbles           : 0xF4F8
+     -> AddRoundKey (K0)        : 0x5449 -> Decrypted Chars: 'TI'
+   [Block 3: Cipher 0x423B (0100001000111011b)]
+     -> AddRoundKey (K2)        : 0xBF14
+     -> InvShiftRows            : 0xB41F
+     -> InvSubNibbles           : 0x315E
+     -> AddRoundKey (K1)        : 0x528C
+     -> InvMixColumns           : 0xFBF5
+     -> InvShiftRows            : 0xF5FB
+     -> InvSubNibbles           : 0xE7E3
+     -> AddRoundKey (K0)        : 0x4752 -> Decrypted Chars: 'GR'
+   ... (22 remaining 16-bit block(s) decrypted similarly)
 
-Decrypt Message: ANTIGRAVITY SECURE PROTOCOL - RAGHAV GUPTA (20243226)
-Hash code: fd7b348520c15e0a64618da2abd975bf6dd4991bb06c20cf8bf7a72f80ab84e5210e5ed41a314fba9d471a5150d8f17aad64766dd1bf8bb39afce8e8b8a075ad
-Verification code: fd7b348520c15e0a64618da2abd975bf6dd4991bb06c20cf8bf7a72f80ab84e5210e5ed41a314fba9d471a5150d8f17aad64766dd1bf8bb39afce8e8b8a075ad
+Decrypt Message: ANTIGRAVITY SECURE PROTOCOL - RAGHAV GUPTA (44275)
+Hash code: 366db1b285510c6290071cc42e2b58e8c31d0b8324f0e5e01a900d8d7ce139c60a7bba9d9c4ad04f53aafc0381272a589d0029f3ebc89a47e48018c0f44fdab8
+Verification code: 366db1b285510c6290071cc42e2b58e8c31d0b8324f0e5e01a900d8d7ce139c60a7bba9d9c4ad04f53aafc0381272a589d0029f3ebc89a47e48018c0f44fdab8
 Signature: <valid>
 Message: <Accepted>
-======================================================================
+===========================================================================
 
 [*] Server socket closed.
