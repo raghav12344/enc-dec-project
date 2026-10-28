@@ -19,8 +19,6 @@
 * **Department:** Department of Computer Science & Engineering (CSED)
 * **Institution:** Motilal Nehru National Institute of Technology (MNNIT) Allahabad
 * **Course:** Information Security / Cryptography & Network Security
-* **Submission Portal:** [Google Forms Submission Link](https://forms.gle/VS3dnQFCf37K9q2j7)
-* **Final Submission Archive:** `44275_Raghav_Gupta.zip`
 
 ---
 

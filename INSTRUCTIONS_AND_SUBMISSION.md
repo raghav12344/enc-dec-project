@@ -3,10 +3,8 @@
 **Student Name:** Raghav Gupta  
 **Roll Number:** 44275  
 **Branch:** B.Tech Computer Science and Engineering  
-**Institute:** MNNIT Allahabad  
-**Submission Link:** [https://forms.gle/VS3dnQFCf37K9q2j7](https://forms.gle/VS3dnQFCf37K9q2j7)  
-**Submission Package:** `44275_Raghav_Gupta.zip`  
-
+**Institute:** MNNIT Allahabad 
+ 
 ---
 
 ## 1. Quick Start for the Evaluator
