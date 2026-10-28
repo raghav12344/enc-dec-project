@@ -9,30 +9,22 @@
 
 ---
 
-## 1. Quick Verification for the Evaluator
+## 1. Quick Start for the Evaluator
 
-This project is fully self-contained using **pure Python 3 standard library** (no `pip install` required).
+This project is fully self-contained using the **pure Python 3 standard library** (zero `pip` dependencies).
 
-### Quick 10-Second Test:
-To run the complete automated test suite verifying S-AES (textbook vector + roundtrip), Whirlpool from scratch, ElGamal key exchange & digital signatures, and live socket transmission:
-```powershell
-py test_suite.py
-```
-*Expected Result: `Ran 5 tests in ~0.5s - OK`*
-
----
-
-## 2. One-Click Interactive Demonstration
-Run:
+Start the entire application with a single command:
 ```powershell
 py main.py
 ```
 *(Or double-click `run.bat` on Windows)*.
-- **Option 1:** Spawns two native Windows terminal windows side-by-side, executing the Server and Client live.
-- **Option 2 & 3:** Run Server and Client interactively in current console.
-- **Option 4:** Runs unit tests.
-- **Option 5:** Re-generates output files and screenshots.
-- **Option 6:** Re-packages the submission zip file (`44275_Raghav_Gupta.zip`).
+
+This opens the master interactive control panel:
+- **Option `[1]`:** Spawns two native Windows terminal windows side-by-side, executing Server and Client live.
+- **Option `[2]` & `[3]`:** Run Server and Client interactively in current console.
+- **Option `[4]`:** Runs all 5 unit and integration tests (`Ran 5 tests in ~0.5s - OK`).
+- **Option `[5]`:** Re-generates output files and screenshots.
+- **Option `[6]`:** Re-packages the submission zip file (`44275_Raghav_Gupta.zip`).
 
 ---
 

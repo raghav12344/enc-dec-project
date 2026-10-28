@@ -398,40 +398,19 @@ This allows an evaluator to cross-reference every function call directly with th
 
 ## 6. Execution Instructions for Evaluation
 
-The application is written in standard Python 3 and runs on any platform with **zero external dependencies**.
+The entire application runs through a single command with **zero external dependencies**:
 
-### Method 1: Master Interactive Launcher (Recommended)
-Open a terminal in the project directory and run:
 ```powershell
 py main.py
 ```
-*(Or double-click `run.bat` on Windows)*.
 
-You will be greeted by the interactive control panel:
-* **Select `[1]`** to instantly spawn Server and Client in **two side-by-side terminal windows**.
-* **Select `[2]`** to run the Server interactively.
-* **Select `[3]`** to run the Client in interactive mode with custom input messages and keys.
-* **Select `[4]`** to run the automated unit test suite (`test_suite.py`).
-* **Select `[5]`** to run the batch demo and regenerate screenshots.
-* **Select `[6]`** to package the final submission ZIP (`44275_Raghav_Gupta.zip`).
-
-### Method 2: Manual Side-by-Side Terminals
-Open two separate terminal windows (or VS Code split terminals):
-
-**Terminal 1 (Server):**
-```powershell
-py server.py --port 12345 --interactive
-```
-
-**Terminal 2 (Client):**
-```powershell
-py client.py --port 12345 --interactive
-```
-
-### Method 3: Automated Test Suite
-```powershell
-py test_suite.py
-```
+Running `py main.py` launches the master interactive control panel:
+* **Select `[1]` — 🚀 Launch Live Side-by-Side Demo:** Automatically spawns Server and Client in two terminal windows side-by-side on your desktop, performing the full handshake, key exchange, encryption, signing, and verification live.
+* **Select `[2]` — 🖥️ Start Server:** Runs the Server in the current console.
+* **Select `[3]` — 📱 Start Client:** Runs the Client interactively to test custom messages and keys.
+* **Select `[4]` — 🧪 Run Automated Tests:** Executes all 5 unit and integration tests (`test_suite.py`).
+* **Select `[5]` — 📸 Generate Output & Screenshots:** Runs batch demo and updates output `.txt` logs and `.png` screenshots.
+* **Select `[6]` — 📦 Package Submission ZIP:** Packages all files into `44275_Raghav_Gupta.zip`.
 
 ---
 
